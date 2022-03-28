@@ -7,15 +7,20 @@ import (
 )
 
 type linkParser struct {
-	storage storage.Storage
+	storage       storage.Storage
+	puttyConfig   *config.Part
+	replaceConfig [][2]string
 }
 
-func New(s storage.Storage, h *config.Part) *linkParser {
-	fillHandler(h)
-
-	return &linkParser{
-		storage: s,
+func New(s storage.Storage, p *config.Part) *linkParser {
+	lp := &linkParser{
+		storage:     s,
+		puttyConfig: p,
 	}
+
+	lp.fillConfig()
+
+	return lp
 }
 
 func (lp *linkParser) Commands() []*cli.Command {
@@ -26,15 +31,15 @@ func (lp *linkParser) Commands() []*cli.Command {
 		Usage: "Собирает доступы с putty ярлыков",
 		Flags: []cli.Flag{
 			&cli.StringFlag{
-				Name:        "folder",
-				Aliases:     []string{"f"},
-				Usage:       "Папка с ярлыками",
+				Name:        "path",
+				Aliases:     []string{"p"},
+				Usage:       "Папка с ярлыками или файл ярлыка",
 				Required:    false,
 				Value:       "./",
 				Destination: nil,
 			},
 		},
-		Action: lp.cliAction,
+		Action: lp.action,
 	})
 
 	return commands

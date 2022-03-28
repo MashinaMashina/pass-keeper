@@ -3,14 +3,14 @@ package parselnk
 import (
 	"fmt"
 	"github.com/urfave/cli/v2"
-	"pass-keeper/internal/accesses"
+	"pass-keeper/internal/accesses/accesstype"
 	"pass-keeper/pkg/filesystem"
 	"path/filepath"
 	"strings"
 )
 
-func (lp *linkParser) cliAction(c *cli.Context) error {
-	folder, err := filepath.Abs(c.String("folder"))
+func (lp *linkParser) action(c *cli.Context) error {
+	folder, err := filepath.Abs(c.String("path"))
 
 	if err != nil {
 		return err
@@ -21,7 +21,7 @@ func (lp *linkParser) cliAction(c *cli.Context) error {
 		return err
 	}
 
-	var access accesses.Access
+	var access accesstype.Access
 	for _, file := range files {
 		if file.IsDir() || !strings.EqualFold(filepath.Ext(file.Name()), ".lnk") {
 			continue
@@ -29,16 +29,18 @@ func (lp *linkParser) cliAction(c *cli.Context) error {
 
 		fmt.Println("Scan", file.Name())
 
-		access, err = sshAccessByLnk(file)
+		access, err = lp.sshAccessByLnk(file)
+
+		fmt.Println(lp.puttyConfig.Get("lnk.replace"))
 
 		if err != nil {
-			fmt.Println(err)
+			fmt.Println("Error with parsing .lnk:", err)
 			continue
 		}
 
-		err = lp.storage.Add(access)
+		err = lp.storage.Save(access)
 		if err != nil {
-			fmt.Println(err)
+			fmt.Println("Error with saving access:", err)
 			continue
 		}
 	}

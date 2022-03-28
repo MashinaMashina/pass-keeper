@@ -12,7 +12,7 @@ import (
 
 var secret = "e21r5naewwps5yx2023yl24fnl1gos5s"
 
-func (m *master) fillHandler() {
+func (m *master) fillConfig() {
 	t := m.masterConfig.TemporaryFields()
 	t = append(t, "password")
 	m.masterConfig.SetTemporaryFields(t)
@@ -29,7 +29,7 @@ func (m *master) fillHandler() {
 	f["file"] = "файл с мастер паролем"
 	m.masterConfig.SetFieldNames(f)
 
-	m.masterConfig.SetValidate(m.validateConfig)
+	m.masterConfig.SetInit(m.validateConfig)
 }
 
 func (m *master) validateConfig() error {

@@ -88,9 +88,13 @@ func (c *Config) AddPart(name string, handler *Part) error {
 	return nil
 }
 
-func (c *Config) Validate() error {
+func (c *Config) Part(name string) *Part {
+	return c.values[name]
+}
+
+func (c *Config) Init() error {
 	for _, handler := range c.values {
-		if err := handler.Validate(); err != nil {
+		if err := handler.Init(); err != nil {
 			return err
 		}
 	}
@@ -104,10 +108,10 @@ func (c *Config) LoadUserConfig() error {
 	if errors.Is(err, FileNotExists) {
 		err = c.GenFile()
 		if err != nil {
-			return err
+			return errors.Wrap(err, "creating config")
 		}
 	} else if err != nil {
-		return err
+		return errors.Wrap(err, "read config")
 	}
 
 	return nil

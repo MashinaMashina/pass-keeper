@@ -8,7 +8,7 @@ type Part struct {
 	temporaryFields []string
 	defaultValues   map[string]string
 	fieldNames      map[string]string
-	validate        func() error
+	init            func() error
 }
 
 func NewPart() *Part {
@@ -90,14 +90,14 @@ func (h *Part) Set(key string, value string) {
 	h.values[key] = value
 }
 
-func (h *Part) Validate() error {
-	if h.validate != nil {
-		return h.validate()
+func (h *Part) Init() error {
+	if h.init != nil {
+		return h.init()
 	}
 
 	return nil
 }
 
-func (h *Part) SetValidate(f func() error) {
-	h.validate = f
+func (h *Part) SetInit(f func() error) {
+	h.init = f
 }

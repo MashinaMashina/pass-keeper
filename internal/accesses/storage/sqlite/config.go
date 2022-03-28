@@ -1,4 +1,4 @@
-package storage
+package sqlite
 
 import (
 	"database/sql"
@@ -8,7 +8,7 @@ import (
 	"github.com/pkg/errors"
 )
 
-func (s *storage) fillHandler() {
+func (s *sqlite) fillConfig() {
 	d := s.storageConfig.DefaultValues()
 	d["source"] = "~/.pass-keeper.db"
 	s.storageConfig.SetDefaultValues(d)
@@ -21,10 +21,10 @@ func (s *storage) fillHandler() {
 	f["source"] = "файл для хранения доступов"
 	s.storageConfig.SetFieldNames(f)
 
-	s.storageConfig.SetValidate(s.validateConfig)
+	s.storageConfig.SetInit(s.initConfig)
 }
 
-func (s *storage) validateConfig() error {
+func (s *sqlite) initConfig() error {
 	source := s.storageConfig.Get("source")
 
 	if source == "" {
@@ -44,5 +44,5 @@ func (s *storage) validateConfig() error {
 		return errors.Wrap(err, "open db source")
 	}
 
-	return nil
+	return s.migration()
 }

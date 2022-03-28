@@ -4,7 +4,8 @@ import (
 	"github.com/urfave/cli/v2"
 	"log"
 	"os"
-	"pass-keeper/internal/accesses/storage"
+	"pass-keeper/internal/accesses"
+	"pass-keeper/internal/accesses/storage/sqlite"
 	"pass-keeper/internal/config"
 	"pass-keeper/internal/integration/putty"
 	"pass-keeper/internal/master"
@@ -15,34 +16,35 @@ func main() {
 		Commands: []*cli.Command{},
 	}
 
+	app.EnableBashCompletion = true
+	app.UseShortOptionHandling = true
+
 	cfg, err := config.New()
 	if err != nil {
 		log.Fatalln(err)
 	}
 
-	s, err := storage.New(cfg)
+	storage, err := sqlite.New(cfg)
 	if err != nil {
 		log.Fatalln(err)
 	}
 	defer func() {
-		err = s.Close()
+		err = storage.Close()
 		if err != nil {
 			log.Println(err)
 		}
 	}()
 
-	p := putty.New(s, cfg)
-	m := master.New(s, cfg)
-
-	app.Commands = append(app.Commands, p.Commands()...)
-	app.Commands = append(app.Commands, m.Commands()...)
+	app.Commands = append(app.Commands, accesses.New(storage, cfg).Commands()...)
+	app.Commands = append(app.Commands, putty.New(storage, cfg).Commands()...)
+	app.Commands = append(app.Commands, master.New(storage, cfg).Commands()...)
 
 	err = cfg.LoadUserConfig()
 	if err != nil {
 		log.Fatalln(err)
 	}
 
-	err = cfg.Validate()
+	err = cfg.Init()
 	if err != nil {
 		log.Fatalln(err)
 	}

@@ -28,7 +28,7 @@ func New(s storage.Storage, cfg *config.Config) *master {
 		masterConfig: h,
 	}
 
-	m.fillHandler()
+	m.fillConfig()
 
 	return m
 }

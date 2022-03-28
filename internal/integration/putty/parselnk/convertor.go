@@ -6,12 +6,12 @@ import (
 	lnk2 "github.com/parsiya/golnk"
 	"github.com/pkg/errors"
 	"net/url"
-	"pass-keeper/internal/accesses"
+	"pass-keeper/internal/accesses/accesstype"
 	"pass-keeper/pkg/filesystem"
 	"strings"
 )
 
-func sshAccessByLnk(file filesystem.File) (accesses.Access, error) {
+func (lp *linkParser) sshAccessByLnk(file filesystem.File) (accesstype.Access, error) {
 	lnk, err := lnk2.File(file.FullPath())
 
 	if err != nil {
@@ -37,8 +37,9 @@ func sshAccessByLnk(file filesystem.File) (accesses.Access, error) {
 
 	name := file.Name()
 	name = strings.TrimSuffix(name, ".lnk")
+	name = lp.cleanFilename(name)
 
-	sshAccess := accesses.NewSSH()
+	sshAccess := accesstype.NewSSH()
 	sshAccess.SetName(name)
 	sshAccess.SetPassword(*password)
 	sshAccess.SetHost(ssh.Host)

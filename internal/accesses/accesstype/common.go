@@ -1,6 +1,8 @@
-package accesses
+package accesstype
 
-import "fmt"
+import (
+	"fmt"
+)
 
 type access struct {
 	typo      string
@@ -29,7 +31,7 @@ type Access interface {
 	SetPassword(password string)
 	Session() string
 	SetSession(session string)
-	Valid() (bool, error)
+	Valid() bool
 	Validate() error
 }
 
@@ -86,24 +88,17 @@ func (a *access) SetPassword(password string) {
 }
 
 func (a *access) Session() string {
-	return a.password
+	return a.session
 }
 
 func (a *access) SetSession(session string) {
 	a.session = session
 }
 
-func (a *access) Valid() (bool, error) {
-	if a.validated == false {
-		err := a.Validate()
-		if err != nil {
-			return false, err
-		}
-	}
-
-	return a.valid, nil
+func (a *access) Valid() bool {
+	return a.valid
 }
 
 func (a *access) Validate() error {
-	return fmt.Errorf("validator not setted for type %s", a.typo)
+	return fmt.Errorf("validator not setted for accesstype %s", a.typo)
 }
