@@ -16,13 +16,13 @@ type Config struct {
 	file   string
 }
 
-func New() (*Config, error) {
+func New(file string) (*Config, error) {
 	cfg := Config{
 		values: map[string]*Part{},
 	}
 
 	var err error
-	cfg.file, err = homedir.Expand("~/.pass-keeper.json")
+	cfg.file, err = homedir.Expand(file)
 
 	if err != nil {
 		return nil, errors.Wrap(err, "expand ~/.pass-keeper.json")

@@ -1,9 +1,11 @@
 package sqlite
 
-import "github.com/pkg/errors"
+import (
+	"github.com/pkg/errors"
+)
 
 func (s *sqlite) migration() error {
-	_, err := s.db.Exec("CREATE TABLE IF NOT EXISTS `accesses` (" +
+	_, err := s.BaseDriver.Db.Exec("CREATE TABLE IF NOT EXISTS `accesses` (" +
 		"id INTEGER  PRIMARY KEY AUTOINCREMENT," +
 		"type TEXT NULL," +
 		"name TEXT NULL," +

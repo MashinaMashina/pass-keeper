@@ -100,5 +100,5 @@ func (a *access) Valid() bool {
 }
 
 func (a *access) Validate() error {
-	return fmt.Errorf("validator not setted for type %s", a.typo)
+	return fmt.Errorf("validator not implemented for type %s", a.typo)
 }

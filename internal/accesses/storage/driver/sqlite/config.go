@@ -9,23 +9,23 @@ import (
 )
 
 func (s *sqlite) fillConfig() {
-	d := s.storageConfig.DefaultValues()
+	d := s.BaseDriver.StorageConfig.DefaultValues()
 	d["source"] = "~/.pass-keeper.db"
-	s.storageConfig.SetDefaultValues(d)
+	s.BaseDriver.StorageConfig.SetDefaultValues(d)
 
-	i := s.storageConfig.InstallFields()
+	i := s.BaseDriver.StorageConfig.InstallFields()
 	i = append(i, "source")
-	s.storageConfig.SetInstallFields(i)
+	s.BaseDriver.StorageConfig.SetInstallFields(i)
 
-	f := s.storageConfig.FieldNames()
+	f := s.BaseDriver.StorageConfig.FieldNames()
 	f["source"] = "файл для хранения доступов"
-	s.storageConfig.SetFieldNames(f)
+	s.BaseDriver.StorageConfig.SetFieldNames(f)
 
-	s.storageConfig.SetInit(s.initConfig)
+	s.BaseDriver.StorageConfig.SetInit(s.initConfig)
 }
 
 func (s *sqlite) initConfig() error {
-	source := s.storageConfig.Get("source")
+	source := s.BaseDriver.StorageConfig.Get("source")
 
 	if source == "" {
 		return fmt.Errorf("DB source not specified")
@@ -38,7 +38,7 @@ func (s *sqlite) initConfig() error {
 		return errors.Wrap(err, "Expand db source")
 	}
 
-	s.db, err = sql.Open("sqlite3", source)
+	s.BaseDriver.Db, err = sql.Open("sqlite3", source)
 
 	if err != nil {
 		return errors.Wrap(err, "open db source")

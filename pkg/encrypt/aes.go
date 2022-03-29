@@ -2,37 +2,43 @@ package encrypt
 
 import (
 	"crypto/aes"
+	"crypto/rand"
 	"encoding/hex"
+	"github.com/Djarvur/go-aescrypt"
+	"strings"
 )
 
 func EncryptAES(key []byte, plaintext string) (string, error) {
-	// create cipher
-	c, err := aes.NewCipher(key)
+	iv := make([]byte, aes.BlockSize)
+	if _, err := rand.Read(iv); err != nil {
+		return "", err
+	}
+
+	bytes, err := aescrypt.EncryptAESCBCPadded([]byte(plaintext), key, iv)
 	if err != nil {
 		return "", err
 	}
 
-	// allocate space for ciphered data
-	out := make([]byte, len(plaintext))
-
-	// encrypt
-	c.Encrypt(out, []byte(plaintext))
-	// return hex string
-	return hex.EncodeToString(out), nil
+	return hex.EncodeToString(iv) + "." + hex.EncodeToString(bytes), nil
 }
 
 func DecryptAES(key []byte, ct string) (string, error) {
-	ciphertext, _ := hex.DecodeString(ct)
+	parts := strings.SplitN(ct, ".", 2)
 
-	c, err := aes.NewCipher(key)
+	iv, err := hex.DecodeString(parts[0])
 	if err != nil {
 		return "", err
 	}
 
-	pt := make([]byte, len(ciphertext))
-	c.Decrypt(pt, ciphertext)
+	ciphertext, err := hex.DecodeString(parts[1])
+	if err != nil {
+		return "", err
+	}
 
-	s := string(pt[:])
+	str, err := aescrypt.DecryptAESCBCPadded(ciphertext, key, iv)
+	if err != nil {
+		return "", err
+	}
 
-	return s, nil
+	return string(str), nil
 }

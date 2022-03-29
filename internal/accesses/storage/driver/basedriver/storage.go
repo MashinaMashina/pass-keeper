@@ -1,4 +1,4 @@
-package sqlite
+package basedriver
 
 import (
 	"database/sql"
@@ -9,45 +9,24 @@ import (
 	"github.com/pkg/errors"
 	"pass-keeper/internal/accesses/accesstype"
 	"pass-keeper/internal/accesses/storage"
-	params2 "pass-keeper/internal/accesses/storage/params"
+	"pass-keeper/internal/accesses/storage/params"
 	"pass-keeper/internal/config"
 	"pass-keeper/pkg/encrypt"
-	"strings"
 )
 
-var secret = "d6e3060700a6dfa5" // 16 bytes
-
-type sqlite struct {
-	db            *sql.DB
-	config        *config.Config
-	storageConfig *config.Part
-	key           []byte
+type BaseDriver struct {
+	Db            *sql.DB
+	Config        *config.Config
+	StorageConfig *config.Part
+	Key           []byte
 }
 
-func New(cfg *config.Config) (storage.Storage, error) {
-	part := config.NewPart()
-	err := cfg.AddPart("storage", part)
-
-	if err != nil {
-		return nil, err
-	}
-
-	s := &sqlite{
-		storageConfig: part,
-		config:        cfg,
-	}
-
-	s.fillConfig()
-
-	return s, nil
-}
-
-func (s *sqlite) Add(access accesstype.Access) error {
+func (s *BaseDriver) Add(access accesstype.Access) error {
 	if access.Name() == "" {
 		return fmt.Errorf("name of access can not be empty")
 	}
 
-	stmt, err := s.db.Prepare("INSERT INTO accesses" +
+	stmt, err := s.Db.Prepare("INSERT INTO accesses" +
 		"(type, name, host, port, login, password, session, valid)" +
 		"VALUES(?, ?, ?, ?, ?, ?, ?, ?)")
 
@@ -74,12 +53,12 @@ func (s *sqlite) Add(access accesstype.Access) error {
 	return nil
 }
 
-func (s *sqlite) Update(id int, access accesstype.Access) error {
+func (s *BaseDriver) Update(id int, access accesstype.Access) error {
 	if access.Name() == "" {
 		return fmt.Errorf("name of access can not be empty")
 	}
 
-	stmt, err := s.db.Prepare("UPDATE accesses SET " +
+	stmt, err := s.Db.Prepare("UPDATE accesses SET " +
 		"type=?, name=?, host=?, port=?, login=?, password=?, session=?, valid=?" +
 		"WHERE id=?")
 
@@ -106,7 +85,7 @@ func (s *sqlite) Update(id int, access accesstype.Access) error {
 	return nil
 }
 
-func (s *sqlite) Save(access accesstype.Access) error {
+func (s *BaseDriver) Save(access accesstype.Access) error {
 	id, err := s.FindId(access)
 
 	if err != nil {
@@ -120,7 +99,7 @@ func (s *sqlite) Save(access accesstype.Access) error {
 	return s.Add(access)
 }
 
-func (s *sqlite) Remove(access accesstype.Access) error {
+func (s *BaseDriver) Remove(access accesstype.Access) error {
 	id, err := s.FindId(access)
 
 	if err != nil {
@@ -128,7 +107,7 @@ func (s *sqlite) Remove(access accesstype.Access) error {
 	}
 
 	if id > 0 {
-		prepare, err := s.db.Prepare("DELETE FROM accesses WHERE id=?")
+		prepare, err := s.Db.Prepare("DELETE FROM accesses WHERE id=?")
 		if err != nil {
 			return err
 		}
@@ -145,7 +124,7 @@ func (s *sqlite) Remove(access accesstype.Access) error {
 	return fmt.Errorf("not found rows")
 }
 
-func (s *sqlite) Exists(access accesstype.Access) (bool, error) {
+func (s *BaseDriver) Exists(access accesstype.Access) (bool, error) {
 	id, err := s.FindId(access)
 
 	if err != nil {
@@ -155,8 +134,8 @@ func (s *sqlite) Exists(access accesstype.Access) (bool, error) {
 	return id > 0, nil
 }
 
-func (s *sqlite) FindId(access accesstype.Access) (int, error) {
-	stmt, err := s.db.Prepare("SELECT id FROM accesses WHERE type=? AND name=? AND host=? LIMIT 1")
+func (s *BaseDriver) FindId(access accesstype.Access) (int, error) {
+	stmt, err := s.Db.Prepare("SELECT id FROM accesses WHERE type=? AND name=? AND host=? LIMIT 1")
 	if err != nil {
 		return 0, err
 	}
@@ -172,7 +151,7 @@ func (s *sqlite) FindId(access accesstype.Access) (int, error) {
 	return id, nil
 }
 
-func (s *sqlite) List(params ...storage.Param) ([]accesstype.Access, error) {
+func (s *BaseDriver) List(params ...storage.Param) ([]accesstype.Access, error) {
 	query := squirrel.
 		Select("type", "name", "host", "login", "port", "password").
 		From("accesses")
@@ -191,7 +170,7 @@ func (s *sqlite) List(params ...storage.Param) ([]accesstype.Access, error) {
 		return nil, err
 	}
 
-	stmt, err := s.db.Query(sql, args...)
+	stmt, err := s.Db.Query(sql, args...)
 
 	if err != nil {
 		return nil, errors.Wrap(err, "get accesses from DB")
@@ -213,8 +192,8 @@ func (s *sqlite) List(params ...storage.Param) ([]accesstype.Access, error) {
 	return rows, nil
 }
 
-func (s *sqlite) FindOne(params ...storage.Param) (accesstype.Access, error) {
-	rows, err := s.List(params...)
+func (s *BaseDriver) FindOne(parameters ...storage.Param) (accesstype.Access, error) {
+	rows, err := s.List(parameters...)
 	if err != nil {
 		return nil, err
 	}
@@ -240,13 +219,13 @@ func (s *sqlite) FindOne(params ...storage.Param) (accesstype.Access, error) {
 			return nil, err
 		}
 
-		return s.FindOne(append(params, params2.NewEq("name", res))...)
+		return s.FindOne(append(parameters, params.NewEq("name", res))...)
 	}
 
 	return rows[0], nil
 }
 
-func (s *sqlite) decodeRow(rows *sql.Rows) (accesstype.Access, error) {
+func (s *BaseDriver) decodeRow(rows *sql.Rows) (accesstype.Access, error) {
 	var typo string
 	var name string
 	var host string
@@ -286,9 +265,9 @@ func (s *sqlite) decodeRow(rows *sql.Rows) (accesstype.Access, error) {
 	return access, nil
 }
 
-func (s *sqlite) Close() error {
-	if s.db != nil {
-		err := s.db.Close()
+func (s *BaseDriver) Close() error {
+	if s.Db != nil {
+		err := s.Db.Close()
 		if err != nil {
 			return err
 		}
@@ -296,30 +275,30 @@ func (s *sqlite) Close() error {
 	return nil
 }
 
-func (s *sqlite) getKey() []byte {
-	if s.key == nil {
-		masterPass, err := hex.DecodeString(s.config.Part("master").Get("password"))
+func (s *BaseDriver) getKey() []byte {
+	if s.Key == nil {
+		masterPass, err := hex.DecodeString(s.Config.Part("master").Get("password"))
 
 		if err != nil {
 			panic("decoding hex of master password error: " + err.Error())
 		}
 
-		s.key = append(masterPass, []byte(secret)...)
+		appKey, err := hex.DecodeString(s.Config.Part("main").Get("key"))
+		if err != nil {
+			return nil
+		}
+
+		s.Key = append(masterPass, appKey...)
 	}
 
-	return s.key
+	return s.Key
 }
 
-func (s *sqlite) encode(data string) (string, error) {
-	return encrypt.EncryptAES(s.getKey(), data+"                ")
+func (s *BaseDriver) encode(data string) (string, error) {
+	// Пробелами дополняем строку до 16 символов
+	return encrypt.EncryptAES(s.getKey(), data)
 }
 
-func (s *sqlite) decode(data string) (string, error) {
-	res, err := encrypt.DecryptAES(s.getKey(), data)
-
-	if err != nil {
-		res = strings.TrimSpace(res)
-	}
-
-	return res, err
+func (s *BaseDriver) decode(data string) (string, error) {
+	return encrypt.DecryptAES(s.getKey(), data)
 }
