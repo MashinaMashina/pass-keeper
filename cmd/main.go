@@ -5,12 +5,7 @@ import (
 	"log"
 	"os"
 	"pass-keeper/internal"
-	"pass-keeper/internal/accesses"
-	"pass-keeper/internal/accesses/storage"
 	"pass-keeper/internal/accesses/storage/driver/sqlite"
-	"pass-keeper/internal/config"
-	"pass-keeper/internal/integration/putty"
-	"pass-keeper/internal/master"
 )
 
 func main() {
@@ -32,7 +27,7 @@ func RunApp() error {
 	}
 	defer storage.Close()
 
-	commands, err := AppPreBuild(storage, cfg)
+	commands, err := internal.CollectCommands(storage, cfg)
 	if err != nil {
 		return err
 	}
@@ -58,16 +53,6 @@ func RunApp() error {
 	}
 
 	return nil
-}
-
-func AppPreBuild(storage storage.Storage, cfg *config.Config) ([]*cli.Command, error) {
-	var commands []*cli.Command
-
-	commands = append(commands, accesses.New(storage, cfg).Commands()...)
-	commands = append(commands, putty.New(storage, cfg).Commands()...)
-	commands = append(commands, master.New(storage, cfg).Commands()...)
-
-	return commands, nil
 }
 
 func AppBuild(commands []*cli.Command) (*cli.App, error) {

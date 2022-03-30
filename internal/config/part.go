@@ -13,7 +13,7 @@ type Part struct {
 
 func NewPart() *Part {
 	return &Part{
-		values:        map[string]string{},
+		values:        make(map[string]string, 0),
 		installFields: []string{},
 		defaultValues: map[string]string{},
 		fieldNames:    map[string]string{},

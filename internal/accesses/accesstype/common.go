@@ -5,6 +5,7 @@ import (
 )
 
 type access struct {
+	id        int
 	typo      string
 	name      string
 	host      string
@@ -17,6 +18,8 @@ type access struct {
 }
 
 type Access interface {
+	ID() int
+	SetID(id int)
 	Type() string
 	SetType(typo string)
 	Name() string
@@ -39,6 +42,13 @@ func New() Access {
 	return &access{typo: "unknown"}
 }
 
+func (a *access) ID() int {
+	return a.id
+}
+
+func (a *access) SetID(id int) {
+	a.id = id
+}
 func (a *access) Type() string {
 	return a.typo
 }

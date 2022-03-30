@@ -21,11 +21,6 @@ func (l *accessEdit) action(c *cli.Context) error {
 		return err
 	}
 
-	id, err := l.storage.FindId(access)
-	if err != nil {
-		return err
-	}
-
 	fmt.Println("Редактирование " + access.Name())
 	fmt.Println("Если не хотите менять строку, пропускайте нажатием Enter")
 
@@ -119,7 +114,7 @@ func (l *accessEdit) action(c *cli.Context) error {
 
 	fmt.Println(fmt.Sprintf("%+v", access))
 
-	err = l.storage.Update(id, access)
+	err = l.storage.Update(access)
 	if err != nil {
 		return err
 	}

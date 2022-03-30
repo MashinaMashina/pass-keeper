@@ -6,12 +6,11 @@ import (
 
 type Storage interface {
 	Add(access accesstype.Access) error
-	Update(id int, access accesstype.Access) error
+	Update(access accesstype.Access) error
 	Save(access accesstype.Access) error
 	Remove(access accesstype.Access) error
-	Exists(accesstype.Access) (bool, error)
+	Exists(access accesstype.Access) (bool, error)
 	List(...Param) ([]accesstype.Access, error)
-	FindId(access accesstype.Access) (int, error)
 	FindOne(...Param) (accesstype.Access, error)
 	Close() error
 }

@@ -43,19 +43,30 @@ func (s *BaseDriver) Add(access accesstype.Access) error {
 		return errors.Wrap(err, "encoding password")
 	}
 
-	_, err = stmt.Exec(access.Type(), access.Name(), access.Host(), access.Port(),
+	res, err := stmt.Exec(access.Type(), access.Name(), access.Host(), access.Port(),
 		login, password, access.Session(), access.Valid())
 
 	if err != nil {
 		return err
 	}
 
+	id, err := res.LastInsertId()
+
+	if err != nil {
+		return err
+	}
+	
+	access.SetID(int(id))
+
 	return nil
 }
 
-func (s *BaseDriver) Update(id int, access accesstype.Access) error {
+func (s *BaseDriver) Update(access accesstype.Access) error {
 	if access.Name() == "" {
 		return fmt.Errorf("name of access can not be empty")
+	}
+	if access.ID() == 0 {
+		return fmt.Errorf("ID of access can not be empty")
 	}
 
 	stmt, err := s.Db.Prepare("UPDATE accesses SET " +
@@ -76,7 +87,7 @@ func (s *BaseDriver) Update(id int, access accesstype.Access) error {
 	}
 
 	_, err = stmt.Exec(access.Type(), access.Name(), access.Host(), access.Port(),
-		login, password, access.Session(), access.Valid(), id)
+		login, password, access.Session(), access.Valid(), access.ID())
 
 	if err != nil {
 		return err
@@ -86,74 +97,39 @@ func (s *BaseDriver) Update(id int, access accesstype.Access) error {
 }
 
 func (s *BaseDriver) Save(access accesstype.Access) error {
-	id, err := s.FindId(access)
-
-	if err != nil {
-		return err
-	}
-
-	if id > 0 {
-		return s.Update(id, access)
+	if access.ID() > 0 {
+		return s.Update(access)
 	}
 
 	return s.Add(access)
 }
 
 func (s *BaseDriver) Remove(access accesstype.Access) error {
-	id, err := s.FindId(access)
+	if access.ID() == 0 {
+		return fmt.Errorf("ID of access can not be empty")
+	}
 
+	prepare, err := s.Db.Prepare("DELETE FROM accesses WHERE id=?")
+	if err != nil {
+		return err
+	}
+	defer prepare.Close()
+
+	_, err = prepare.Exec(access.ID())
 	if err != nil {
 		return err
 	}
 
-	if id > 0 {
-		prepare, err := s.Db.Prepare("DELETE FROM accesses WHERE id=?")
-		if err != nil {
-			return err
-		}
-		defer prepare.Close()
-
-		_, err = prepare.Exec(id)
-		if err != nil {
-			return err
-		}
-
-		return nil
-	}
-
-	return fmt.Errorf("not found rows")
+	return nil
 }
 
 func (s *BaseDriver) Exists(access accesstype.Access) (bool, error) {
-	id, err := s.FindId(access)
-
-	if err != nil {
-		return false, err
-	}
-
-	return id > 0, nil
-}
-
-func (s *BaseDriver) FindId(access accesstype.Access) (int, error) {
-	stmt, err := s.Db.Prepare("SELECT id FROM accesses WHERE type=? AND name=? AND host=? LIMIT 1")
-	if err != nil {
-		return 0, err
-	}
-	defer stmt.Close()
-
-	var id int
-	err = stmt.QueryRow(access.Type(), access.Name(), access.Host()).Scan(&id)
-
-	if err != nil && err != sql.ErrNoRows {
-		return 0, err
-	}
-
-	return id, nil
+	return access.ID() > 0, nil
 }
 
 func (s *BaseDriver) List(params ...storage.Param) ([]accesstype.Access, error) {
 	query := squirrel.
-		Select("type", "name", "host", "login", "port", "password").
+		Select("id", "type", "name", "host", "login", "port", "password").
 		From("accesses")
 
 	for _, param := range params {
@@ -226,6 +202,7 @@ func (s *BaseDriver) FindOne(parameters ...storage.Param) (accesstype.Access, er
 }
 
 func (s *BaseDriver) decodeRow(rows *sql.Rows) (accesstype.Access, error) {
+	var id int
 	var typo string
 	var name string
 	var host string
@@ -235,7 +212,7 @@ func (s *BaseDriver) decodeRow(rows *sql.Rows) (accesstype.Access, error) {
 	var access accesstype.Access
 	var err error
 
-	if err = rows.Scan(&typo, &name, &host, &login, &port, &password); err != nil {
+	if err = rows.Scan(&id, &typo, &name, &host, &login, &port, &password); err != nil {
 		return nil, err
 	}
 
@@ -256,6 +233,7 @@ func (s *BaseDriver) decodeRow(rows *sql.Rows) (accesstype.Access, error) {
 		return nil, err
 	}
 
+	access.SetID(id)
 	access.SetHost(host)
 	access.SetName(name)
 	access.SetLogin(login)
