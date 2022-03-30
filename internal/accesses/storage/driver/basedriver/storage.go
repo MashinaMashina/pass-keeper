@@ -12,6 +12,7 @@ import (
 	"pass-keeper/internal/accesses/storage/params"
 	"pass-keeper/internal/config"
 	"pass-keeper/pkg/encrypt"
+	"strconv"
 	"time"
 )
 
@@ -130,11 +131,28 @@ func (s *BaseDriver) Remove(access accesstype.Access) error {
 		return err
 	}
 
+	access.SetID(0)
+
 	return nil
 }
 
 func (s *BaseDriver) Exists(access accesstype.Access) (bool, error) {
 	return access.ID() > 0, nil
+}
+
+func (s *BaseDriver) FindExists(access accesstype.Access) (accesstype.Access, error) {
+	row, err := s.List(params.NewEq("name", access.Name()), params.NewEq("type", access.Type()),
+		params.NewEq("host", access.Host()), params.NewLimit(1))
+
+	if err != nil {
+		return nil, err
+	}
+
+	if len(row) == 0 {
+		return nil, fmt.Errorf("not find rows")
+	}
+
+	return row[0], nil
 }
 
 func (s *BaseDriver) List(params ...storage.Param) ([]accesstype.Access, error) {
@@ -148,6 +166,11 @@ func (s *BaseDriver) List(params ...storage.Param) ([]accesstype.Access, error) 
 			query = query.Where(param.Value()[0]+" LIKE ?", param.Value()[1])
 		case "eq":
 			query = query.Where(param.Value()[0]+" = ?", param.Value()[1])
+		case "limit":
+			i, _ := strconv.Atoi(param.Value()[0])
+			query = query.Limit(uint64(i))
+		default:
+			return nil, fmt.Errorf("invalid param type %s", param.ParamType())
 		}
 	}
 

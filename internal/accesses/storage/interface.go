@@ -10,6 +10,7 @@ type Storage interface {
 	Save(access accesstype.Access) error
 	Remove(access accesstype.Access) error
 	Exists(access accesstype.Access) (bool, error)
+	FindExists(access accesstype.Access) (accesstype.Access, error)
 	List(...Param) ([]accesstype.Access, error)
 	FindOne(...Param) (accesstype.Access, error)
 	Close() error

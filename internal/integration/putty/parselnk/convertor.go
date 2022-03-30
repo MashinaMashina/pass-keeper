@@ -11,6 +11,8 @@ import (
 	"strings"
 )
 
+var ErrEmptyLink = errors.New("link has no data")
+
 func (lp *linkParser) sshAccessByLnk(file filesystem.File) (accesstype.Access, error) {
 	lnk, err := lnk2.File(file.FullPath())
 
@@ -48,6 +50,10 @@ func (lp *linkParser) sshAccessByLnk(file filesystem.File) (accesstype.Access, e
 
 	if *sess != "" {
 		sshAccess.SetSession(*sess)
+	}
+
+	if sshAccess.Host() == "" && sshAccess.Session() == "" {
+		return nil, ErrEmptyLink
 	}
 
 	return sshAccess, nil

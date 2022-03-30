@@ -31,11 +31,15 @@ func (lp *linkParser) action(c *cli.Context) error {
 
 		access, err = lp.sshAccessByLnk(file)
 
-		fmt.Println(lp.puttyConfig.Get("lnk.replace"))
-
 		if err != nil {
 			fmt.Println("Error with parsing .lnk:", err)
 			continue
+		}
+
+		if existRow, err := lp.storage.FindExists(access); err == nil {
+			access.SetID(existRow.ID())
+		} else {
+			fmt.Println(err)
 		}
 
 		err = lp.storage.Save(access)
