@@ -12,6 +12,7 @@ import (
 	"pass-keeper/internal/accesses/storage/params"
 	"pass-keeper/internal/config"
 	"pass-keeper/pkg/encrypt"
+	"time"
 )
 
 type BaseDriver struct {
@@ -27,8 +28,8 @@ func (s *BaseDriver) Add(access accesstype.Access) error {
 	}
 
 	stmt, err := s.Db.Prepare("INSERT INTO accesses" +
-		"(type, name, host, port, login, password, session, valid)" +
-		"VALUES(?, ?, ?, ?, ?, ?, ?, ?)")
+		"(type, name, host, port, login, password, session, valid, created_at, updated_at)" +
+		"VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?, ?)")
 
 	if err != nil {
 		return errors.Wrap(err, "prepare add access")
@@ -43,19 +44,24 @@ func (s *BaseDriver) Add(access accesstype.Access) error {
 		return errors.Wrap(err, "encoding password")
 	}
 
+	now := time.Now()
+
 	res, err := stmt.Exec(access.Type(), access.Name(), access.Host(), access.Port(),
-		login, password, access.Session(), access.Valid())
+		login, password, access.Session(), access.Valid(), now.Unix(), now.Unix())
 
 	if err != nil {
 		return err
 	}
+
+	access.SetCreatedAt(now)
+	access.SetUpdatedAt(now)
 
 	id, err := res.LastInsertId()
 
 	if err != nil {
 		return err
 	}
-	
+
 	access.SetID(int(id))
 
 	return nil
@@ -70,7 +76,7 @@ func (s *BaseDriver) Update(access accesstype.Access) error {
 	}
 
 	stmt, err := s.Db.Prepare("UPDATE accesses SET " +
-		"type=?, name=?, host=?, port=?, login=?, password=?, session=?, valid=?" +
+		"type=?, name=?, host=?, port=?, login=?, password=?, session=?, valid=?, updated_at=?" +
 		"WHERE id=?")
 
 	if err != nil {
@@ -86,12 +92,16 @@ func (s *BaseDriver) Update(access accesstype.Access) error {
 		return errors.Wrap(err, "encoding password")
 	}
 
+	now := time.Now()
+
 	_, err = stmt.Exec(access.Type(), access.Name(), access.Host(), access.Port(),
-		login, password, access.Session(), access.Valid(), access.ID())
+		login, password, access.Session(), access.Valid(), now.Unix(), access.ID())
 
 	if err != nil {
 		return err
 	}
+
+	access.SetUpdatedAt(now)
 
 	return nil
 }
@@ -129,7 +139,7 @@ func (s *BaseDriver) Exists(access accesstype.Access) (bool, error) {
 
 func (s *BaseDriver) List(params ...storage.Param) ([]accesstype.Access, error) {
 	query := squirrel.
-		Select("id", "type", "name", "host", "login", "port", "password").
+		Select("id", "type", "name", "host", "login", "port", "password", "created_at", "updated_at").
 		From("accesses")
 
 	for _, param := range params {
@@ -211,8 +221,10 @@ func (s *BaseDriver) decodeRow(rows *sql.Rows) (accesstype.Access, error) {
 	var password string
 	var access accesstype.Access
 	var err error
+	var createdAt int64
+	var updatedAt int64
 
-	if err = rows.Scan(&id, &typo, &name, &host, &login, &port, &password); err != nil {
+	if err = rows.Scan(&id, &typo, &name, &host, &login, &port, &password, &createdAt, &updatedAt); err != nil {
 		return nil, err
 	}
 
@@ -239,6 +251,8 @@ func (s *BaseDriver) decodeRow(rows *sql.Rows) (accesstype.Access, error) {
 	access.SetLogin(login)
 	access.SetPort(port)
 	access.SetPassword(password)
+	access.SetCreatedAt(time.Unix(createdAt, 0))
+	access.SetUpdatedAt(time.Unix(updatedAt, 0))
 
 	return access, nil
 }

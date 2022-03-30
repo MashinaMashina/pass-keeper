@@ -104,8 +104,6 @@ func (l *accessAdd) action(c *cli.Context) error {
 		access.SetPassword(value)
 	}
 
-	fmt.Println(fmt.Sprintf("%+v", access))
-
 	err = l.storage.Add(access)
 	if err != nil {
 		return err

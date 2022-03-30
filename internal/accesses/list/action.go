@@ -56,7 +56,7 @@ func (l *accessList) table(c *cli.Context, rows []accesstype.Access) error {
 }
 
 func (l *accessList) list(c *cli.Context, rows []accesstype.Access) error {
-	tbl := table.New("Name", "Host", "Login")
+	tbl := table.New("Type", "Name", "Host", "Login", "Updated")
 
 	tbl.WithPadding(1)
 
@@ -66,7 +66,7 @@ func (l *accessList) list(c *cli.Context, rows []accesstype.Access) error {
 			host = fmt.Sprintf("%s:%d", host, row.Port())
 		}
 
-		tbl.AddRow(row.Name(), host, row.Login())
+		tbl.AddRow(row.Type(), row.Name(), host, row.Login(), row.UpdatedAt().Format("15:04 02.01.06"))
 	}
 
 	tbl.Print()

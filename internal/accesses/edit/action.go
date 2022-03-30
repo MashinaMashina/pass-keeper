@@ -112,8 +112,6 @@ func (l *accessEdit) action(c *cli.Context) error {
 		return nil
 	}
 
-	fmt.Println(fmt.Sprintf("%+v", access))
-
 	err = l.storage.Update(access)
 	if err != nil {
 		return err
