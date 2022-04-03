@@ -1,7 +1,6 @@
 package accesses
 
 import (
-	"fmt"
 	"github.com/urfave/cli/v2"
 	accessadd "pass-keeper/internal/accesses/add"
 	accessedit "pass-keeper/internal/accesses/edit"
@@ -13,33 +12,23 @@ import (
 )
 
 type access struct {
-	storage      storage.Storage
-	config       *config.Config
-	accessConfig *config.Part
+	storage storage.Storage
+	config  *config.Config
 }
 
 func New(s storage.Storage, cfg *config.Config) *access {
-	h := config.NewPart()
-
-	err := cfg.AddPart("access", h)
-	if err != nil {
-		fmt.Println("error:", err.Error())
-		return nil
-	}
-
 	return &access{
-		storage:      s,
-		config:       cfg,
-		accessConfig: h,
+		storage: s,
+		config:  cfg,
 	}
 }
 
 func (p *access) Commands() []*cli.Command {
-	commands := accesslist.New(p.storage, p.accessConfig).Commands()
-	commands = append(commands, accessadd.New(p.storage, p.accessConfig).Commands()...)
-	commands = append(commands, accessedit.New(p.storage, p.accessConfig).Commands()...)
-	commands = append(commands, accessshow.New(p.storage, p.accessConfig).Commands()...)
-	commands = append(commands, accessremove.New(p.storage, p.accessConfig).Commands()...)
+	commands := accesslist.New(p.storage, p.config).Commands()
+	commands = append(commands, accessadd.New(p.storage, p.config).Commands()...)
+	commands = append(commands, accessedit.New(p.storage, p.config).Commands()...)
+	commands = append(commands, accessshow.New(p.storage, p.config).Commands()...)
+	commands = append(commands, accessremove.New(p.storage, p.config).Commands()...)
 
 	return []*cli.Command{
 		{

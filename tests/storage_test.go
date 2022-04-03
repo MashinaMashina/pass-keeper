@@ -8,14 +8,8 @@ import (
 )
 
 func TestCRUD(t *testing.T) {
-	cfg, storage, err := internal.TestingConfigAndStorage()
+	_, storage, err := internal.TestingConfigAndStorage()
 	defer storage.Close()
-	if err != nil {
-		t.Error(err)
-		return
-	}
-
-	err = cfg.Init()
 	if err != nil {
 		t.Error(err)
 		return
@@ -139,14 +133,8 @@ func TestCRUD(t *testing.T) {
 }
 
 func TestMultipleRows(t *testing.T) {
-	cfg, storage, err := internal.TestingConfigAndStorage()
+	_, storage, err := internal.TestingConfigAndStorage()
 	defer storage.Close()
-	if err != nil {
-		t.Error(err)
-		return
-	}
-
-	err = cfg.Init()
 	if err != nil {
 		t.Error(err)
 		return

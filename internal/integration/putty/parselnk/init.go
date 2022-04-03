@@ -7,15 +7,14 @@ import (
 )
 
 type linkParser struct {
-	storage       storage.Storage
-	puttyConfig   *config.Part
-	replaceConfig [][2]string
+	storage storage.Storage
+	config  *config.Config
 }
 
-func New(s storage.Storage, p *config.Part) *linkParser {
+func New(s storage.Storage, cfg *config.Config) *linkParser {
 	lp := &linkParser{
-		storage:     s,
-		puttyConfig: p,
+		storage: s,
+		config:  cfg,
 	}
 
 	lp.fillConfig()

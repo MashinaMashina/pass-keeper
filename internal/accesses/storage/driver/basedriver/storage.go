@@ -17,10 +17,9 @@ import (
 )
 
 type BaseDriver struct {
-	Db            *sql.DB
-	Config        *config.Config
-	StorageConfig *config.Part
-	Key           []byte
+	Db     *sql.DB
+	Config *config.Config
+	Key    []byte
 }
 
 func (s *BaseDriver) Add(access accesstype.Access) error {
@@ -248,7 +247,7 @@ func (s *BaseDriver) decodeRow(rows *sql.Rows) (accesstype.Access, error) {
 	var updatedAt int64
 
 	if err = rows.Scan(&id, &typo, &name, &host, &login, &port, &password, &createdAt, &updatedAt); err != nil {
-		return nil, err
+		return nil, errors.Wrap(err, "scanning storage data to variables")
 	}
 
 	switch typo {
@@ -260,12 +259,12 @@ func (s *BaseDriver) decodeRow(rows *sql.Rows) (accesstype.Access, error) {
 
 	login, err = s.decode(login)
 	if err != nil {
-		return nil, err
+		return nil, errors.Wrap(err, "login decoding")
 	}
 
 	password, err = s.decode(password)
 	if err != nil {
-		return nil, err
+		return nil, errors.Wrap(err, "password decoding")
 	}
 
 	access.SetID(id)
@@ -292,15 +291,15 @@ func (s *BaseDriver) Close() error {
 
 func (s *BaseDriver) getKey() []byte {
 	if s.Key == nil {
-		masterPass, err := hex.DecodeString(s.Config.Part("master").Get("password"))
+		masterPass, err := hex.DecodeString(s.Config.String("master.password"))
 
 		if err != nil {
 			panic("decoding hex of master password error: " + err.Error())
 		}
 
-		appKey, err := hex.DecodeString(s.Config.Part("main").Get("key"))
+		appKey, err := hex.DecodeString(s.Config.String("main.key"))
 		if err != nil {
-			return nil
+			panic("invalid app key")
 		}
 
 		s.Key = append(masterPass, appKey...)
@@ -310,10 +309,19 @@ func (s *BaseDriver) getKey() []byte {
 }
 
 func (s *BaseDriver) encode(data string) (string, error) {
-	// Пробелами дополняем строку до 16 символов
-	return encrypt.EncryptAES(s.getKey(), data)
+	res, err := encrypt.EncryptAES(s.getKey(), data)
+	if err != nil {
+		err = errors.Wrap(err, "encode storage data")
+	}
+
+	return res, err
 }
 
 func (s *BaseDriver) decode(data string) (string, error) {
-	return encrypt.DecryptAES(s.getKey(), data)
+	res, err := encrypt.DecryptAES(s.getKey(), data)
+	if err != nil {
+		err = errors.Wrap(err, "decode storage data (may be invalid master password?)")
+	}
+
+	return res, err
 }

@@ -7,17 +7,15 @@ import (
 )
 
 type accessAdd struct {
-	storage      storage.Storage
-	accessConfig *config.Part
+	storage storage.Storage
+	config  *config.Config
 }
 
-func New(s storage.Storage, p *config.Part) *accessAdd {
+func New(s storage.Storage, cfg *config.Config) *accessAdd {
 	a := &accessAdd{
-		storage:      s,
-		accessConfig: p,
+		storage: s,
+		config:  cfg,
 	}
-
-	a.fillConfig()
 
 	return a
 }

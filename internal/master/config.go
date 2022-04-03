@@ -1,21 +1,89 @@
 package master
 
-func (m *master) fillConfig() {
-	t := m.masterConfig.TemporaryFields()
-	t = append(t, "password")
-	m.masterConfig.SetTemporaryFields(t)
+import (
+	"encoding/hex"
+	"fmt"
+	"github.com/mitchellh/go-homedir"
+	"github.com/pkg/errors"
+	"io/ioutil"
+	"pass-keeper/pkg/encrypt"
+	"pass-keeper/pkg/filesystem"
+)
 
-	d := m.masterConfig.DefaultValues()
-	d["file"] = "~/.pass-keeper.master"
-	m.masterConfig.SetDefaultValues(d)
+func (m *master) initConfig() error {
+	if m.config.String("master.file") == "" {
+		m.config.Set("master.file", "~/.pass-keeper.master")
+	}
 
-	i := m.masterConfig.InstallFields()
-	i = append(i, "file")
-	m.masterConfig.SetInstallFields(i)
+	masterFile, err := homedir.Expand(m.config.String("master.file"))
+	if err != nil {
+		return err
+	}
 
-	f := m.masterConfig.FieldNames()
-	f["file"] = "файл с мастер паролем"
-	m.masterConfig.SetFieldNames(f)
+	exists, err := filesystem.Exists(masterFile)
+	if err != nil {
+		return err
+	}
 
-	m.masterConfig.SetInit(m.validateConfig)
+	if !exists {
+		return m.masterFileDialog(masterFile, "Не найден файл с мастер паролем, введите мастер пароль:")
+	}
+
+	bytes, err := ioutil.ReadFile(masterFile)
+	if err != nil {
+		return err
+	}
+
+	deviceKey, err := m.DeviceCryptoKey()
+	if err != nil {
+		return err
+	}
+
+	pwd, err := encrypt.DecryptAES(deviceKey, string(bytes))
+	if err != nil {
+		return m.masterFileDialog(masterFile, "Не верный мастер пароль, введите мастер пароль заново:")
+	}
+
+	_, err = hex.DecodeString(pwd)
+	if err != nil {
+		return m.masterFileDialog(masterFile, "Не верный мастер пароль, введите мастер пароль заново:")
+	}
+
+	m.config.Set("master.password", pwd)
+
+	return nil
+}
+
+func (m *master) masterFileDialog(masterFile, message string) error {
+	fmt.Println(message)
+	var pwd string
+	_, err := fmt.Scanln(&pwd)
+	if err != nil {
+		return err
+	}
+
+	return m.saveMasterPassword(masterFile, pwd)
+}
+
+func (m *master) saveMasterPassword(masterFile, pwd string) error {
+	pwd = m.Hash(pwd)
+
+	m.config.Set("master.password", pwd)
+
+	deviceKey, err := m.DeviceCryptoKey()
+	if err != nil {
+		return err
+	}
+
+	encoded, err := encrypt.EncryptAES(deviceKey, pwd)
+	if err != nil {
+		return errors.Wrap(err, "encoding master password")
+	}
+
+	err = ioutil.WriteFile(masterFile, []byte(encoded), 0644)
+	if err != nil {
+		return errors.Wrap(err, "write master password failed")
+	}
+
+	return nil
 }

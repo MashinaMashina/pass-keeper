@@ -3,28 +3,38 @@ package parselnk
 import "strings"
 
 func (lp *linkParser) getReplaceConfig() [][2]string {
-	if lp.replaceConfig == nil {
-		parts := strings.Split(lp.puttyConfig.Get("lnk.replace"), "|")
-
-		lp.replaceConfig = make([][2]string, 0)
-		for _, part := range parts {
-			p := strings.Split(part, ":")
-
-			lp.replaceConfig = append(lp.replaceConfig, [2]string{
-				p[0],
-				p[1],
-			})
-		}
+	// putty.replace не map[string]string, потому что нам важен порядок элементов
+	if lp.config.Slice("putty.replace") == nil {
+		lp.config.Set("putty.replace", []string{
+			"PuTTY — ",
+			"PuTTY ",
+		})
 	}
 
-	return lp.replaceConfig
+	slice := lp.config.Slice("putty.replace")
+	var res [][2]string
+	var parts []string
+	for _, v := range slice {
+		parts = strings.SplitN(v, ":", 2)
+
+		if len(parts) != 2 {
+			parts = append(parts, "")
+		}
+
+		res = append(res, [2]string{
+			parts[0],
+			parts[1],
+		})
+	}
+
+	return res
 }
 
 func (lp *linkParser) cleanFilename(name string) string {
 	replace := lp.getReplaceConfig()
 
-	for _, r := range replace {
-		name = strings.Replace(name, r[0], r[1], -1)
+	for _, v := range replace {
+		name = strings.Replace(name, v[0], v[1], -1)
 	}
 
 	return name

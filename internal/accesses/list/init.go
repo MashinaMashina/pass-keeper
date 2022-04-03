@@ -7,17 +7,15 @@ import (
 )
 
 type accessList struct {
-	storage      storage.Storage
-	accessConfig *config.Part
+	storage storage.Storage
+	config  *config.Config
 }
 
-func New(s storage.Storage, p *config.Part) *accessList {
+func New(s storage.Storage, cfg *config.Config) *accessList {
 	a := &accessList{
-		storage:      s,
-		accessConfig: p,
+		storage: s,
+		config:  cfg,
 	}
-
-	a.fillConfig()
 
 	return a
 }

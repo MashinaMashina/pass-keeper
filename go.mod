@@ -15,6 +15,7 @@ require (
 
 require (
 	github.com/Djarvur/go-aescrypt v0.1.1 // indirect
+	github.com/buger/jsonparser v1.1.1 // indirect
 	github.com/chzyer/readline v0.0.0-20180603132655-2972be24d48e // indirect
 	github.com/cpuguy83/go-md2man/v2 v2.0.1 // indirect
 	github.com/denisbrodbeck/machineid v1.0.1 // indirect

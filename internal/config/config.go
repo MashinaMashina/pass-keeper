@@ -6,75 +6,106 @@ import (
 	"github.com/mitchellh/go-homedir"
 	"github.com/pkg/errors"
 	"io/ioutil"
-	"pass-keeper/pkg/filesystem"
+	"os"
 )
 
-var FileNotExists = errors.New("config file not exists")
-
 type Config struct {
-	values map[string]*Part
-	file   string
+	values   map[string]interface{}
+	virtuals []string
+	initFile string
 }
 
-func New(file string) (*Config, error) {
-	cfg := Config{
-		values: map[string]*Part{},
+func NewConfig() *Config {
+	return &Config{
+		values: map[string]interface{}{},
+	}
+}
+
+func (c *Config) Set(k string, v interface{}) {
+	c.values[k] = v
+}
+
+func (c *Config) Virtual() []string {
+	return c.virtuals
+}
+
+func (c *Config) SetVirtual(v []string) {
+	c.virtuals = v
+}
+
+func (c *Config) Get(k string) interface{} {
+	if val, exists := c.values[k]; exists {
+		return val
 	}
 
+	return nil
+}
+
+func (c *Config) String(k string) string {
+	val := c.Get(k)
+	switch val.(type) {
+	case float64:
+		return fmt.Sprintf("%v", val)
+	case string:
+		return val.(string)
+	}
+
+	return ""
+}
+
+func (c *Config) Map(k string) map[string]string {
+	val := c.Get(k)
+	switch val.(type) {
+	case map[string]interface{}:
+		res := make(map[string]string)
+		for k, v := range val.(map[string]interface{}) {
+			res[k] = fmt.Sprint(v)
+		}
+
+		return res
+	}
+
+	return nil
+}
+
+func (c *Config) Slice(k string) []string {
+	val := c.Get(k)
+	switch val.(type) {
+	case []interface{}:
+		var res []string
+		for _, v := range val.([]interface{}) {
+			res = append(res, fmt.Sprint(v))
+		}
+
+		return res
+	}
+
+	return nil
+}
+
+func (c *Config) InitFromFile(file string) error {
 	var err error
-	cfg.file, err = homedir.Expand(file)
+	file, err = homedir.Expand(file)
 
 	if err != nil {
-		return nil, errors.Wrap(err, "expand ~/.pass-keeper.json")
+		return errors.Wrap(err, "expand "+file)
 	}
 
-	return &cfg, nil
-}
+	c.initFile = file
 
-func (c *Config) GenFile() error {
-	for key, handler := range c.values {
-		for _, field := range handler.InstallFields() {
-			name := fmt.Sprintf("%s.%s", key, field)
-
-			if humanName, exists := handler.FieldNames()[field]; exists {
-				name = humanName
-			}
-
-			text := fmt.Sprintf("Введите %s", name)
-
-			def, exists := handler.Default(field)
-			if exists {
-				text = fmt.Sprintf("%s (по-умолчанию \"%s\")", text, def)
-			}
-
-			text = fmt.Sprintf("%s:", text)
-
-			fmt.Println(text)
-
-			var val string
-			_, err := fmt.Scanln(&val)
-			if err != nil && err.Error() != "unexpected newline" {
-				return err
-			}
-
-			if val == "" {
-				val = def
-			}
-
-			c.values[key].Set(field, val)
-		}
+	bytes, err := ioutil.ReadFile(file)
+	if errors.Is(err, os.ErrNotExist) {
+		return nil
 	}
-
-	return c.Save()
-}
-
-func (c *Config) Save() error {
-	bytes, err := json.MarshalIndent(c, "", "\t")
 	if err != nil {
 		return err
 	}
 
-	err = ioutil.WriteFile(c.file, bytes, 0777)
+	return c.InitFromData(bytes)
+}
+
+func (c *Config) InitFromData(b []byte) error {
+	err := json.Unmarshal(b, &c.values)
 	if err != nil {
 		return err
 	}
@@ -82,57 +113,20 @@ func (c *Config) Save() error {
 	return nil
 }
 
-func (c *Config) AddPart(name string, handler *Part) error {
-	c.values[name] = handler
-
-	return nil
-}
-
-func (c *Config) Part(name string) *Part {
-	return c.values[name]
-}
-
-func (c *Config) Init() error {
-	for _, handler := range c.values {
-		if err := handler.Init(); err != nil {
-			return err
-		}
+func (c *Config) SaveToFile(file ...string) error {
+	var f string
+	if len(file) == 0 {
+		f = c.initFile
+	} else {
+		f = file[0]
 	}
 
-	return nil
-}
-
-func (c *Config) LoadUserConfig() error {
-	err := c.Load(c.file)
-
-	if errors.Is(err, FileNotExists) {
-		err = c.GenFile()
-		if err != nil {
-			return errors.Wrap(err, "creating config")
-		}
-	} else if err != nil {
-		return errors.Wrap(err, "read config")
-	}
-
-	return nil
-}
-
-func (c *Config) Load(filename string) error {
-	exists, err := filesystem.Exists(filename)
+	bytes, err := c.SaveToData()
 	if err != nil {
 		return err
 	}
 
-	if !exists {
-		return FileNotExists
-	}
-
-	bytes, err := ioutil.ReadFile(filename)
-	if err != nil {
-		return err
-	}
-
-	err = json.Unmarshal(bytes, &c)
+	err = ioutil.WriteFile(f, bytes, 0644)
 	if err != nil {
 		return err
 	}
@@ -140,24 +134,16 @@ func (c *Config) Load(filename string) error {
 	return nil
 }
 
-func (c *Config) MarshalJSON() ([]byte, error) {
-	return json.Marshal(c.values)
-}
+func (c *Config) SaveToData() ([]byte, error) {
+	values := c.values
+	for _, k := range c.virtuals {
+		delete(values, k)
+	}
 
-func (c *Config) UnmarshalJSON(bytes []byte) error {
-	var m map[string]map[string]string
-
-	err := json.Unmarshal(bytes, &m)
-
+	bytes, err := json.MarshalIndent(values, "", "	")
 	if err != nil {
-		return err
+		return nil, err
 	}
 
-	for key, value := range m {
-		if _, exists := c.values[key]; exists {
-			c.values[key].Load(value)
-		}
-	}
-
-	return nil
+	return bytes, nil
 }

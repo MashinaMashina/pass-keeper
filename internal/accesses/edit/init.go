@@ -7,17 +7,15 @@ import (
 )
 
 type accessEdit struct {
-	storage      storage.Storage
-	accessConfig *config.Part
+	storage storage.Storage
+	config  *config.Config
 }
 
-func New(s storage.Storage, p *config.Part) *accessEdit {
+func New(s storage.Storage, cfg *config.Config) *accessEdit {
 	a := &accessEdit{
-		storage:      s,
-		accessConfig: p,
+		storage: s,
+		config:  cfg,
 	}
-
-	a.fillConfig()
 
 	return a
 }

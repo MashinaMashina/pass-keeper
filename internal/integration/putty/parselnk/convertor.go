@@ -13,13 +13,17 @@ import (
 
 var ErrEmptyLink = errors.New("link has no data")
 
-func (lp *linkParser) sshAccessByLnk(file filesystem.File) (accesstype.Access, error) {
+func (lp *linkParser) sshAccessByLnkFile(file filesystem.File) (accesstype.Access, error) {
 	lnk, err := lnk2.File(file.FullPath())
 
 	if err != nil {
 		return nil, err
 	}
 
+	return lp.sshAccessByLnk(lnk, file.Name())
+}
+
+func (lp *linkParser) sshAccessByLnk(lnk lnk2.LnkFile, name string) (accesstype.Access, error) {
 	flagSet := flag.NewFlagSet("", flag.ContinueOnError)
 
 	sshUri := flagSet.String("ssh", "", "SSH")
@@ -27,9 +31,9 @@ func (lp *linkParser) sshAccessByLnk(file filesystem.File) (accesstype.Access, e
 	port := flagSet.Int("P", 22, "Port")
 	sess := flagSet.String("load", "", "putty session")
 
-	err = flagSet.Parse(strings.Split(lnk.StringData.CommandLineArguments, " "))
+	err := flagSet.Parse(strings.Split(lnk.StringData.CommandLineArguments, " "))
 	if err != nil {
-		return nil, errors.Wrap(err, fmt.Sprintf("parse \"%s\" flags", file.Name()))
+		return nil, errors.Wrap(err, fmt.Sprintf("parse \"%s\" flags", name))
 	}
 
 	ssh, err := url.Parse(fmt.Sprintf("ssh://%s", *sshUri))
@@ -37,7 +41,6 @@ func (lp *linkParser) sshAccessByLnk(file filesystem.File) (accesstype.Access, e
 		return nil, errors.Wrap(err, fmt.Sprintf("parsing %s", *sshUri))
 	}
 
-	name := file.Name()
 	name = strings.TrimSuffix(name, ".lnk")
 	name = lp.cleanFilename(name)
 

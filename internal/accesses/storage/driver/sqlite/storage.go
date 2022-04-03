@@ -11,21 +11,16 @@ type sqlite struct {
 }
 
 func New(cfg *config.Config) (storage.Storage, error) {
-	part := config.NewPart()
-	err := cfg.AddPart("storage", part)
-
-	if err != nil {
-		return nil, err
-	}
-
 	s := &sqlite{
 		basedriver.BaseDriver{
-			StorageConfig: part,
-			Config:        cfg,
+			Config: cfg,
 		},
 	}
 
-	s.fillConfig()
+	err := s.initConfig()
+	if err != nil {
+		return nil, err
+	}
 
 	return s, nil
 }

@@ -29,7 +29,7 @@ func (lp *linkParser) action(c *cli.Context) error {
 
 		fmt.Println("Scan", file.Name())
 
-		access, err = lp.sshAccessByLnk(file)
+		access, err = lp.sshAccessByLnkFile(file)
 
 		if err != nil {
 			fmt.Println("Error with parsing .lnk:", err)
@@ -38,8 +38,6 @@ func (lp *linkParser) action(c *cli.Context) error {
 
 		if existRow, err := lp.storage.FindExists(access); err == nil {
 			access.SetID(existRow.ID())
-		} else {
-			fmt.Println(err)
 		}
 
 		err = lp.storage.Save(access)

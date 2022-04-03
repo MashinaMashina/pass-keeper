@@ -1,11 +1,13 @@
 package main
 
 import (
+	"github.com/pkg/errors"
 	"github.com/urfave/cli/v2"
 	"log"
 	"os"
 	"pass-keeper/internal"
 	"pass-keeper/internal/accesses/storage/driver/sqlite"
+	"pass-keeper/internal/config"
 )
 
 func main() {
@@ -13,43 +15,38 @@ func main() {
 	if err != nil {
 		log.Fatalln(err)
 	}
+
 }
 
 func RunApp() error {
-	cfg, err := internal.NewConfig("~/.pass-keeper.json")
+	cfg := config.NewConfig()
+	err := cfg.InitFromFile("~/.pass-keeper.json")
 	if err != nil {
-		return err
+		return errors.Wrap(err, "init config")
 	}
+	defer cfg.SaveToFile()
+
+	internal.FillKey(cfg)
 
 	storage, err := sqlite.New(cfg)
 	if err != nil {
-		return err
+		return errors.Wrap(err, "init storage")
 	}
 	defer storage.Close()
 
 	commands, err := internal.CollectCommands(storage, cfg)
 	if err != nil {
-		return err
-	}
-
-	err = cfg.LoadUserConfig()
-	if err != nil {
-		return err
-	}
-
-	err = cfg.Init()
-	if err != nil {
-		return err
+		return errors.Wrap(err, "init commands")
 	}
 
 	app, err := AppBuild(commands)
 	if err != nil {
-		return err
+		return errors.Wrap(err, "build app")
 	}
 
 	err = app.Run(os.Args)
 	if err != nil {
-		return err
+		return errors.Wrap(err, "app runtime")
 	}
 
 	return nil

@@ -7,17 +7,15 @@ import (
 )
 
 type accessRemove struct {
-	storage      storage.Storage
-	accessConfig *config.Part
+	storage storage.Storage
+	config  *config.Config
 }
 
-func New(s storage.Storage, p *config.Part) *accessRemove {
+func New(s storage.Storage, cfg *config.Config) *accessRemove {
 	a := &accessRemove{
-		storage:      s,
-		accessConfig: p,
+		storage: s,
+		config:  cfg,
 	}
-
-	a.fillConfig()
 
 	return a
 }

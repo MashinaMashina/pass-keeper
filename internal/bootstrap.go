@@ -1,7 +1,6 @@
 package internal
 
 import (
-	"encoding/json"
 	"github.com/urfave/cli/v2"
 	"pass-keeper/internal/accesses"
 	"pass-keeper/internal/accesses/storage"
@@ -11,17 +10,11 @@ import (
 	"pass-keeper/internal/master"
 )
 
-func NewConfig(file string) (*config.Config, error) {
-	cfg, err := config.New(file)
-	if err != nil {
-		return nil, err
-	}
+func FillKey(cfg *config.Config) {
+	virtual := cfg.Virtual()
+	cfg.SetVirtual(append(virtual, "main.key"))
 
-	mainConf := config.NewPart()
-	mainConf.Set("key", key)
-	cfg.AddPart("main", mainConf)
-
-	return cfg, nil
+	cfg.Set("main.key", key)
 }
 
 func CollectCommands(storage storage.Storage, cfg *config.Config) ([]*cli.Command, error) {
@@ -35,10 +28,13 @@ func CollectCommands(storage storage.Storage, cfg *config.Config) ([]*cli.Comman
 }
 
 func TestingConfigAndStorage() (*config.Config, storage.Storage, error) {
-	cfg, err := NewConfig("")
+	cfg := config.NewConfig()
+	err := cfg.InitFromData([]byte("{\"master.file\":\"~/.pass-keeper.master\",\"storage.source\":\":memory:\"}"))
 	if err != nil {
 		return nil, nil, err
 	}
+
+	FillKey(cfg)
 
 	s, err := sqlite.New(cfg)
 	if err != nil {
@@ -46,12 +42,6 @@ func TestingConfigAndStorage() (*config.Config, storage.Storage, error) {
 	}
 
 	_, err = CollectCommands(s, cfg)
-	if err != nil {
-		return nil, nil, err
-	}
-
-	jsonBytes := []byte("{\"master\":{\"file\":\"~/.pass-keeper.master\",\"password\":\"c4ca4238a0b923820dcc509a6f75849b\"},\"storage\":{\"source\":\":memory:\"}}")
-	err = json.Unmarshal(jsonBytes, cfg)
 	if err != nil {
 		return nil, nil, err
 	}

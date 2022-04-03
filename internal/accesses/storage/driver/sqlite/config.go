@@ -2,33 +2,17 @@ package sqlite
 
 import (
 	"database/sql"
-	"fmt"
 	_ "github.com/mattn/go-sqlite3"
 	"github.com/mitchellh/go-homedir"
 	"github.com/pkg/errors"
 )
 
-func (s *sqlite) fillConfig() {
-	d := s.BaseDriver.StorageConfig.DefaultValues()
-	d["source"] = "~/.pass-keeper.db"
-	s.BaseDriver.StorageConfig.SetDefaultValues(d)
-
-	i := s.BaseDriver.StorageConfig.InstallFields()
-	i = append(i, "source")
-	s.BaseDriver.StorageConfig.SetInstallFields(i)
-
-	f := s.BaseDriver.StorageConfig.FieldNames()
-	f["source"] = "файл для хранения доступов"
-	s.BaseDriver.StorageConfig.SetFieldNames(f)
-
-	s.BaseDriver.StorageConfig.SetInit(s.initConfig)
-}
-
 func (s *sqlite) initConfig() error {
-	source := s.BaseDriver.StorageConfig.Get("source")
+	source := s.BaseDriver.Config.String("storage.source")
 
 	if source == "" {
-		return fmt.Errorf("DB source not specified")
+		source = "~/.pass-keeper.db"
+		s.BaseDriver.Config.Set("storage.source", source)
 	}
 
 	var err error

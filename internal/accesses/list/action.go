@@ -66,7 +66,7 @@ func (l *accessList) list(c *cli.Context, rows []accesstype.Access) error {
 			host = fmt.Sprintf("%s:%d", host, row.Port())
 		}
 
-		tbl.AddRow(row.Type(), row.Name(), host, row.Login(), row.UpdatedAt().Format("15:04 02.01.06"))
+		tbl.AddRow(row.Type(), row.Name(), host, row.Login(), row.UpdatedAt().Format("15:04 02/01/06"))
 	}
 
 	tbl.Print()

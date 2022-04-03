@@ -7,17 +7,15 @@ import (
 )
 
 type accessShow struct {
-	storage      storage.Storage
-	accessConfig *config.Part
+	storage storage.Storage
+	config  *config.Config
 }
 
-func New(s storage.Storage, p *config.Part) *accessShow {
+func New(s storage.Storage, cfg *config.Config) *accessShow {
 	a := &accessShow{
-		storage:      s,
-		accessConfig: p,
+		storage: s,
+		config:  cfg,
 	}
-
-	a.fillConfig()
 
 	return a
 }
