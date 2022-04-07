@@ -9,7 +9,6 @@ import (
 	"pass-keeper/internal/accesses/storage/driver/sqlite"
 	"pass-keeper/internal/app"
 	"pass-keeper/internal/config"
-	"pass-keeper/pkg/iocustom"
 )
 
 func main() {
@@ -20,22 +19,13 @@ func main() {
 }
 
 func RunApp() error {
-	tmpFile, err := os.Create("C:\\Users\\Роман\\test.txt")
-	if err != nil {
-		return err
-	}
-
-	defer tmpFile.Close()
-
-	w := iocustom.MultiWriteCloser(tmpFile, os.Stdout)
-
 	dto := app.DTO{
-		Stdout: w,
+		Stdout: os.Stdout,
 		Stdin:  os.Stdin,
 	}
 
 	cfg := config.NewConfig()
-	err = cfg.InitFromFile("~/.pass-keeper.json")
+	err := cfg.InitFromFile("~/.pass-keeper.json")
 	if err != nil {
 		return errors.Wrap(err, "init config")
 	}

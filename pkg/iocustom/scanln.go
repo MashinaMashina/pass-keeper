@@ -1,4 +1,4 @@
-package scanln
+package iocustom
 
 import (
 	"bufio"
@@ -7,7 +7,11 @@ import (
 )
 
 func Scanln(output *string) error {
-	s := bufio.NewScanner(os.Stdin)
+	return Fscanln(os.Stdin, output)
+}
+
+func Fscanln(r io.Reader, output *string) error {
+	s := bufio.NewScanner(r)
 	if s.Scan() {
 		*output = s.Text()
 		return nil

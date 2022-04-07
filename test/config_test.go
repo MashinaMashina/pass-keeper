@@ -8,9 +8,10 @@ import (
 	"testing"
 )
 
-func TestTypes(t *testing.T) {
+func TestConfigTypes(t *testing.T) {
 	str := "{\"a\":123, \"b\":\"тест\", \"c\":[\"one\", \"two\"], \"d\":{\"e\":\"1\", \"f\": \"2\"}}"
 
+	t.Log("init config")
 	cfg := config.NewConfig()
 	err := cfg.InitFromData([]byte(str))
 	if err != nil {
@@ -18,27 +19,33 @@ func TestTypes(t *testing.T) {
 		return
 	}
 
+	t.Log("get string parameter")
 	if err = equal("a", cfg.String("a"), "123"); err != nil {
 		t.Error(err)
 		return
 	}
 
+	t.Log("get cyrillic string parameter")
 	if err = equal("b", cfg.String("b"), "тест"); err != nil {
 		t.Error(err)
 		return
 	}
 
+	t.Log("get slice parameter")
 	if err = equal("c", cfg.Slice("c"), []string{"one", "two"}); err != nil {
 		t.Error(err)
 		return
 	}
 
+	t.Log("get map parameter")
 	if err = equal("d", cfg.Map("d"), map[string]string{"e": "1", "f": "2"}); err != nil {
 		t.Error(err)
 		return
 	}
 
 	{
+		t.Log("check virtual parameters")
+
 		cfg.SetVirtual([]string{"virt"})
 		cfg.Set("virt", "test")
 
