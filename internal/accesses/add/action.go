@@ -3,43 +3,51 @@ package accessadd
 import (
 	"fmt"
 	"github.com/manifoldco/promptui"
+	"github.com/pkg/errors"
 	"github.com/urfave/cli/v2"
 	"pass-keeper/internal/accesses/accesstype"
 	"pass-keeper/internal/accesses/storage/params"
+	"pass-keeper/pkg/clibell"
 	"strconv"
 	"time"
 )
 
 func (l *accessAdd) action(c *cli.Context) error {
-	promt := promptui.Select{
-		Label: "Выберите тип",
-		Items: []string{"ssh"},
-	}
-
-	_, res, err := promt.Run()
-	if err != nil {
-		return err
-	}
-
-	// Без этого фикса promptui.Select съедает часть следующего вывода
-	time.Sleep(time.Millisecond)
-
 	var value string
-
+	var err error
 	var access accesstype.Access
-	switch res {
-	case "ssh":
-		access = accesstype.NewSSH()
-	}
 
-	for {
-		fmt.Print("Введите имя: ")
-		_, err = fmt.Scanln(&value)
+	if value = c.String("type"); value == "" {
+		promt := promptui.Select{
+			Label:  "Выберите тип",
+			Items:  []string{"ssh"},
+			Stdout: clibell.Instance(l.Stdout),
+		}
+
+		_, value, err = promt.Run()
 		if err != nil {
 			return err
 		}
 
-		rows, err := l.storage.List(
+		// Без этого фикса promptui.Select съедает часть следующего вывода
+		time.Sleep(time.Millisecond)
+	}
+
+	switch value {
+	case "ssh":
+		access = accesstype.NewSSH()
+	default:
+		return errors.New(fmt.Sprintf("invalid type %s", value))
+	}
+
+	for {
+		fmt.Fprint(l.Stdout, "Введите имя: ")
+		_, err = fmt.Fscanln(l.Stdin, &value)
+		if err != nil {
+			return err
+		}
+
+		rows, err := l.Storage.List(
 			params.NewEq("name", value),
 			params.NewEq("type", access.Type()),
 		)
@@ -51,13 +59,13 @@ func (l *accessAdd) action(c *cli.Context) error {
 			access.SetName(value)
 			break
 		} else {
-			fmt.Println("Такое имя уже есть, выберите другое")
+			fmt.Fprintln(l.Stdout, "Такое имя уже есть, выберите другое")
 		}
 	}
 
-	fmt.Print("Введите хост: ")
+	fmt.Fprint(l.Stdout, "Введите хост: ")
 	value = ""
-	_, err = fmt.Scanln(&value)
+	_, err = fmt.Fscanln(l.Stdin, &value)
 	if err != nil && err.Error() != "unexpected newline" {
 		return err
 	}
@@ -65,14 +73,14 @@ func (l *accessAdd) action(c *cli.Context) error {
 		access.SetHost(value)
 	}
 
-	fmt.Print("Введите порт")
+	fmt.Fprint(l.Stdout, "Введите порт")
 	if access.Port() != 0 {
-		fmt.Print(" (по умолчанию ", access.Port(), ")")
+		fmt.Fprint(l.Stdout, " (по умолчанию ", access.Port(), ")")
 	}
-	fmt.Print(": ")
+	fmt.Fprint(l.Stdout, ": ")
 
 	value = ""
-	_, err = fmt.Scanln(&value)
+	_, err = fmt.Fscanln(l.Stdin, &value)
 	if err != nil && (access.Port() == 0 || err.Error() != "unexpected newline") {
 		return err
 	}
@@ -84,9 +92,9 @@ func (l *accessAdd) action(c *cli.Context) error {
 		access.SetPort(port)
 	}
 
-	fmt.Print("Введите логин: ")
+	fmt.Fprint(l.Stdout, "Введите логин: ")
 	value = ""
-	_, err = fmt.Scanln(&value)
+	_, err = fmt.Fscanln(l.Stdin, &value)
 	if err != nil && err.Error() != "unexpected newline" {
 		return err
 	}
@@ -94,9 +102,9 @@ func (l *accessAdd) action(c *cli.Context) error {
 		access.SetLogin(value)
 	}
 
-	fmt.Print("Введите пароль: ")
+	fmt.Fprint(l.Stdout, "Введите пароль: ")
 	value = ""
-	_, err = fmt.Scanln(&value)
+	_, err = fmt.Fscanln(l.Stdin, &value)
 	if err != nil && err.Error() != "unexpected newline" {
 		return err
 	}
@@ -104,12 +112,12 @@ func (l *accessAdd) action(c *cli.Context) error {
 		access.SetPassword(value)
 	}
 
-	err = l.storage.Add(access)
+	err = l.Storage.Add(access)
 	if err != nil {
 		return err
 	}
 
-	fmt.Println("Добавлено")
+	fmt.Fprintln(l.Stdout, "Добавлено")
 
 	return nil
 }

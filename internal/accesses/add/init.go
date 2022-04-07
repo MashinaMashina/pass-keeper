@@ -2,20 +2,15 @@ package accessadd
 
 import (
 	"github.com/urfave/cli/v2"
-	"pass-keeper/internal/accesses/storage"
-	"pass-keeper/internal/config"
+	"pass-keeper/internal/app"
 )
 
 type accessAdd struct {
-	storage storage.Storage
-	config  *config.Config
+	app.DTO
 }
 
-func New(s storage.Storage, cfg *config.Config) *accessAdd {
-	a := &accessAdd{
-		storage: s,
-		config:  cfg,
-	}
+func New(dto app.DTO) *accessAdd {
+	a := &accessAdd{dto}
 
 	return a
 }
@@ -27,6 +22,14 @@ func (l *accessAdd) Commands() []*cli.Command {
 		Name:   "add",
 		Usage:  "Добавить доступ",
 		Action: l.action,
+		Flags: []cli.Flag{
+			&cli.StringFlag{
+				Name:        "type",
+				Usage:       "Тип доступа",
+				Required:    false,
+				Destination: nil,
+			},
+		},
 	})
 
 	return commands

@@ -1,21 +1,20 @@
-package tests
+package test
 
 import (
 	"encoding/hex"
-	"pass-keeper/internal"
 	"pass-keeper/internal/master"
 	"pass-keeper/pkg/encrypt"
 	"testing"
 )
 
 func TestHash(t *testing.T) {
-	cfg, storage, err := internal.TestingConfigAndStorage()
+	dto, err := testingDTO()
 	if err != nil {
 		t.Error(err)
 	}
-	defer storage.Close()
+	defer dto.Storage.Close()
 
-	m := master.New(storage, cfg)
+	m := master.New(dto)
 
 	hashed := m.Hash("test")
 
@@ -26,13 +25,13 @@ func TestHash(t *testing.T) {
 }
 
 func TestDeviceCryptoKey(t *testing.T) {
-	cfg, storage, err := internal.TestingConfigAndStorage()
+	dto, err := testingDTO()
 	if err != nil {
 		t.Error(err)
 	}
-	defer storage.Close()
+	defer dto.Storage.Close()
 
-	m := master.New(storage, cfg)
+	m := master.New(dto)
 
 	key, err := m.DeviceCryptoKey()
 	if err != nil {

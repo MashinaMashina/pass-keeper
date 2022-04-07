@@ -2,6 +2,7 @@ package accessedit
 
 import (
 	"fmt"
+	"github.com/pkg/errors"
 	"github.com/urfave/cli/v2"
 	"pass-keeper/internal/accesses/storage"
 	"pass-keeper/internal/accesses/storage/params"
@@ -16,30 +17,30 @@ func (l *accessEdit) action(c *cli.Context) error {
 		parameters = append(parameters, params.NewLike("name", c.Args().First()+"%"))
 	}
 
-	access, err := l.storage.FindOne(parameters...)
+	access, err := l.Storage.FindOne(parameters...)
 	if err != nil {
-		return err
+		return errors.Wrap(err, "get access from storage")
 	}
 
-	fmt.Println("Редактирование " + access.Name())
-	fmt.Println("Если не хотите менять строку, пропускайте нажатием Enter")
+	fmt.Fprintln(l.Stdout, "Редактирование "+access.Name())
+	fmt.Fprintln(l.Stdout, "Если не хотите менять строку, пропускайте нажатием Enter")
 
 	var value string
 	var edit []string
 	for {
-		fmt.Print("Введите имя: ")
-		_, err = fmt.Scanln(&value)
+		fmt.Fprint(l.Stdout, "Введите имя: ")
+		_, err = fmt.Fscanln(l.Stdin, &value)
 		if err != nil && err.Error() != "unexpected newline" {
-			return err
+			return errors.Wrap(err, "scan name")
 		}
 
 		if value != "" {
-			rows, err := l.storage.List(
+			rows, err := l.Storage.List(
 				params.NewEq("name", value),
 				params.NewEq("type", access.Type()),
 			)
 			if err != nil {
-				return err
+				return errors.Wrap(err, "check access name is exists")
 			}
 
 			if len(rows) == 0 {
@@ -47,34 +48,30 @@ func (l *accessEdit) action(c *cli.Context) error {
 				edit = append(edit, "имя")
 				break
 			} else {
-				fmt.Println("Такое имя уже есть, выберите другое")
+				fmt.Fprintln(l.Stdout, "Такое имя уже есть, выберите другое")
 			}
 		} else {
 			break
 		}
 	}
 
-	fmt.Print("Введите хост: ")
+	fmt.Fprint(l.Stdout, "Введите хост: ")
 	value = ""
-	_, err = fmt.Scanln(&value)
+	_, err = fmt.Fscanln(l.Stdin, &value)
 	if err != nil && err.Error() != "unexpected newline" {
-		return err
+		return errors.Wrap(err, "scan host")
 	}
 	if value != "" {
 		access.SetHost(value)
 		edit = append(edit, "хост")
 	}
 
-	fmt.Print("Введите порт")
-	if access.Port() != 0 {
-		fmt.Print(" (по умолчанию ", access.Port(), ")")
-	}
-	fmt.Print(": ")
+	fmt.Fprint(l.Stdout, "Введите порт: ")
 
 	value = ""
-	_, err = fmt.Scanln(&value)
+	_, err = fmt.Fscanln(l.Stdin, &value)
 	if err != nil && (access.Port() == 0 || err.Error() != "unexpected newline") {
-		return err
+		return errors.Wrap(err, "scan port")
 	}
 	if value != "" {
 		port, err := strconv.Atoi(value)
@@ -85,22 +82,22 @@ func (l *accessEdit) action(c *cli.Context) error {
 		edit = append(edit, "порт")
 	}
 
-	fmt.Print("Введите логин: ")
+	fmt.Fprint(l.Stdout, "Введите логин: ")
 	value = ""
-	_, err = fmt.Scanln(&value)
+	_, err = fmt.Fscanln(l.Stdin, &value)
 	if err != nil && err.Error() != "unexpected newline" {
-		return err
+		return errors.Wrap(err, "scan login")
 	}
 	if value != "" {
 		access.SetLogin(value)
 		edit = append(edit, "логин")
 	}
 
-	fmt.Print("Введите пароль: ")
+	fmt.Fprint(l.Stdout, "Введите пароль: ")
 	value = ""
-	_, err = fmt.Scanln(&value)
+	_, err = fmt.Fscanln(l.Stdin, &value)
 	if err != nil && err.Error() != "unexpected newline" {
-		return err
+		return errors.Wrap(err, "scan password")
 	}
 	if value != "" {
 		access.SetPassword(value)
@@ -108,16 +105,16 @@ func (l *accessEdit) action(c *cli.Context) error {
 	}
 
 	if len(edit) == 0 {
-		fmt.Println("Нечего менять")
+		fmt.Fprintln(l.Stdout, "Нечего менять")
 		return nil
 	}
 
-	err = l.storage.Update(access)
+	err = l.Storage.Update(access)
 	if err != nil {
-		return err
+		return errors.Wrap(err, "update access")
 	}
 
-	fmt.Println("Обновлены поля: " + strings.Join(edit, ", "))
+	fmt.Fprintln(l.Stdout, "Обновлены поля: "+strings.Join(edit, ", "))
 
 	return nil
 }

@@ -7,10 +7,13 @@ import (
 	"github.com/Masterminds/squirrel"
 	"github.com/manifoldco/promptui"
 	"github.com/pkg/errors"
+	"io"
+	"os"
 	"pass-keeper/internal/accesses/accesstype"
 	"pass-keeper/internal/accesses/storage"
 	"pass-keeper/internal/accesses/storage/params"
 	"pass-keeper/internal/config"
+	"pass-keeper/pkg/clibell"
 	"pass-keeper/pkg/encrypt"
 	"strconv"
 	"time"
@@ -20,6 +23,8 @@ type BaseDriver struct {
 	Db     *sql.DB
 	Config *config.Config
 	Key    []byte
+	Stdin  io.ReadCloser
+	Stdout io.WriteCloser
 }
 
 func (s *BaseDriver) Add(access accesstype.Access) error {
@@ -217,12 +222,20 @@ func (s *BaseDriver) FindOne(parameters ...storage.Param) (accesstype.Access, er
 			names = append(names, row.Name())
 		}
 
+		var res string
+
 		promt := promptui.Select{
-			Label: "Доступно несколько вариантов",
-			Items: names,
+			Label:  "Доступно несколько вариантов",
+			Items:  names,
+			Stdout: clibell.Instance(s.Stdout),
 		}
 
-		_, res, err := promt.Run()
+		// При указании promt.Stdin выбор перестает быть интерактивным
+		if s.Stdin != os.Stdin {
+			promt.Stdin = s.Stdin
+		}
+
+		_, res, err = promt.Run()
 		if err != nil {
 			return nil, err
 		}

@@ -2,20 +2,15 @@ package accesslist
 
 import (
 	"github.com/urfave/cli/v2"
-	"pass-keeper/internal/accesses/storage"
-	"pass-keeper/internal/config"
+	"pass-keeper/internal/app"
 )
 
 type accessList struct {
-	storage storage.Storage
-	config  *config.Config
+	app.DTO
 }
 
-func New(s storage.Storage, cfg *config.Config) *accessList {
-	a := &accessList{
-		storage: s,
-		config:  cfg,
-	}
+func New(dto app.DTO) *accessList {
+	a := &accessList{dto}
 
 	return a
 }

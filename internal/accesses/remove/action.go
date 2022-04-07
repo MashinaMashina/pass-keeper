@@ -15,25 +15,25 @@ func (l *accessRemove) action(c *cli.Context) error {
 		parameters = append(parameters, params.NewLike("name", c.Args().First()+"%"))
 	}
 
-	row, err := l.storage.FindOne(parameters...)
+	row, err := l.Storage.FindOne(parameters...)
 	if err != nil {
 		return err
 	}
 
 	var confirm string
-	fmt.Print(fmt.Sprintf("Удалить %s? (Y/n) ", row.Name()))
-	fmt.Scanln(&confirm)
+	fmt.Fprint(l.Stdout, fmt.Sprintf("Удалить %s? (Y/n) ", row.Name()))
+	fmt.Fscanln(l.Stdin, &confirm)
 
 	if strings.ToLower(confirm) != "y" {
 		return nil
 	}
 
-	err = l.storage.Remove(row)
+	err = l.Storage.Remove(row)
 	if err != nil {
 		return err
 	}
 
-	fmt.Println("Удалено")
+	fmt.Fprintln(l.Stdout, "Удалено")
 
 	return nil
 }

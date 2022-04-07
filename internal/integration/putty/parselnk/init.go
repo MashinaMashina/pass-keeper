@@ -2,22 +2,15 @@ package parselnk
 
 import (
 	"github.com/urfave/cli/v2"
-	"pass-keeper/internal/accesses/storage"
-	"pass-keeper/internal/config"
+	"pass-keeper/internal/app"
 )
 
 type linkParser struct {
-	storage storage.Storage
-	config  *config.Config
+	app.DTO
 }
 
-func New(s storage.Storage, cfg *config.Config) *linkParser {
-	lp := &linkParser{
-		storage: s,
-		config:  cfg,
-	}
-
-	lp.fillConfig()
+func New(dto app.DTO) *linkParser {
+	lp := &linkParser{dto}
 
 	return lp
 }

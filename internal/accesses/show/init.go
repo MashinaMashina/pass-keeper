@@ -2,20 +2,15 @@ package accessshow
 
 import (
 	"github.com/urfave/cli/v2"
-	"pass-keeper/internal/accesses/storage"
-	"pass-keeper/internal/config"
+	"pass-keeper/internal/app"
 )
 
 type accessShow struct {
-	storage storage.Storage
-	config  *config.Config
+	app.DTO
 }
 
-func New(s storage.Storage, cfg *config.Config) *accessShow {
-	a := &accessShow{
-		storage: s,
-		config:  cfg,
-	}
+func New(dto app.DTO) *accessShow {
+	a := &accessShow{dto}
 
 	return a
 }

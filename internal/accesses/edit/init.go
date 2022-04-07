@@ -2,20 +2,15 @@ package accessedit
 
 import (
 	"github.com/urfave/cli/v2"
-	"pass-keeper/internal/accesses/storage"
-	"pass-keeper/internal/config"
+	"pass-keeper/internal/app"
 )
 
 type accessEdit struct {
-	storage storage.Storage
-	config  *config.Config
+	app.DTO
 }
 
-func New(s storage.Storage, cfg *config.Config) *accessEdit {
-	a := &accessEdit{
-		storage: s,
-		config:  cfg,
-	}
+func New(dto app.DTO) *accessEdit {
+	a := &accessEdit{dto}
 
 	return a
 }

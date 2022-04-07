@@ -2,20 +2,15 @@ package accessremove
 
 import (
 	"github.com/urfave/cli/v2"
-	"pass-keeper/internal/accesses/storage"
-	"pass-keeper/internal/config"
+	"pass-keeper/internal/app"
 )
 
 type accessRemove struct {
-	storage storage.Storage
-	config  *config.Config
+	app.DTO
 }
 
-func New(s storage.Storage, cfg *config.Config) *accessRemove {
-	a := &accessRemove{
-		storage: s,
-		config:  cfg,
-	}
+func New(dto app.DTO) *accessRemove {
+	a := &accessRemove{dto}
 
 	return a
 }

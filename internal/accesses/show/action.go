@@ -15,7 +15,7 @@ func (l *accessShow) action(c *cli.Context) error {
 		likeParam = params.NewLike("name", c.Args().First()+"%")
 	}
 
-	row, err := l.storage.FindOne(likeParam)
+	row, err := l.Storage.FindOne(likeParam)
 	if err != nil {
 		return err
 	}
@@ -26,6 +26,7 @@ func (l *accessShow) action(c *cli.Context) error {
 func (l *accessShow) show(row accesstype.Access) error {
 	tbl := table.New("", "")
 
+	tbl.WithWriter(l.Stdout)
 	tbl.WithPadding(1)
 
 	isValid := "Нет"
@@ -40,6 +41,8 @@ func (l *accessShow) show(row accesstype.Access) error {
 	tbl.AddRow("Пароль", row.Password())
 	tbl.AddRow("Имя сессии", row.Session())
 	tbl.AddRow("Валиден", isValid)
+	tbl.AddRow("Добавлен", row.CreatedAt().Format(l.Config.String("main.date_format")))
+	tbl.AddRow("Изменен", row.UpdatedAt().Format(l.Config.String("main.date_format")))
 
 	tbl.Print()
 

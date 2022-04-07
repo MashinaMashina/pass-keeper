@@ -16,7 +16,7 @@ func (l *accessList) action(c *cli.Context) error {
 		parameters = append(parameters, params.NewLike("name", c.Args().First()+"%"))
 	}
 
-	rows, err := l.storage.List(parameters...)
+	rows, err := l.Storage.List(parameters...)
 	if err != nil {
 		return err
 	}
@@ -29,14 +29,19 @@ func (l *accessList) action(c *cli.Context) error {
 }
 
 func (l *accessList) table(c *cli.Context, rows []accesstype.Access) error {
+	if len(rows) == 0 {
+		return nil
+	}
+
 	tbl := table.New("", "", "", "", "")
 
+	tbl.WithWriter(l.Stdout)
 	tbl.WithPadding(1)
 
 	var line [3]string
 	i := 0
 	for _, row := range rows {
-		line[i] = fmt.Sprintf("\"%s\"", row.Name())
+		line[i] = row.Name()
 		i++
 
 		if i == 3 {
@@ -58,6 +63,7 @@ func (l *accessList) table(c *cli.Context, rows []accesstype.Access) error {
 func (l *accessList) list(c *cli.Context, rows []accesstype.Access) error {
 	tbl := table.New("Type", "Name", "Host", "Login", "Updated")
 
+	tbl.WithWriter(l.Stdout)
 	tbl.WithPadding(1)
 
 	for _, row := range rows {
@@ -66,7 +72,7 @@ func (l *accessList) list(c *cli.Context, rows []accesstype.Access) error {
 			host = fmt.Sprintf("%s:%d", host, row.Port())
 		}
 
-		tbl.AddRow(row.Type(), row.Name(), host, row.Login(), row.UpdatedAt().Format("15:04 02/01/06"))
+		tbl.AddRow(row.Type(), row.Name(), host, row.Login(), row.UpdatedAt().Format(l.Config.String("main.date_format")))
 	}
 
 	tbl.Print()

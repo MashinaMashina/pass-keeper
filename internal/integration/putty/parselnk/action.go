@@ -27,22 +27,22 @@ func (lp *linkParser) action(c *cli.Context) error {
 			continue
 		}
 
-		fmt.Println("Scan", file.Name())
+		fmt.Fprintln(lp.Stdout, "Scan", file.Name())
 
 		access, err = lp.sshAccessByLnkFile(file)
 
 		if err != nil {
-			fmt.Println("Error with parsing .lnk:", err)
+			fmt.Fprintln(lp.Stdout, "Error with parsing .lnk:", err)
 			continue
 		}
 
-		if existRow, err := lp.storage.FindExists(access); err == nil {
+		if existRow, err := lp.Storage.FindExists(access); err == nil {
 			access.SetID(existRow.ID())
 		}
 
-		err = lp.storage.Save(access)
+		err = lp.Storage.Save(access)
 		if err != nil {
-			fmt.Println("Error with saving access:", err)
+			fmt.Fprintln(lp.Stdout, "Error with saving access:", err)
 			continue
 		}
 	}

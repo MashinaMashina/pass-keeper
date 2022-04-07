@@ -13,7 +13,7 @@ func (m *master) DeviceCryptoKey() ([]byte, error) {
 		return nil, err
 	}
 
-	bytes := md5.Sum([]byte(machineId + m.config.String("main.key")))
+	bytes := md5.Sum([]byte(machineId + m.Config.String("main.key")))
 
 	return bytes[:], nil
 }

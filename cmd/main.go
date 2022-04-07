@@ -7,7 +7,9 @@ import (
 	"os"
 	"pass-keeper/internal"
 	"pass-keeper/internal/accesses/storage/driver/sqlite"
+	"pass-keeper/internal/app"
 	"pass-keeper/internal/config"
+	"pass-keeper/pkg/iocustom"
 )
 
 func main() {
@@ -15,52 +17,62 @@ func main() {
 	if err != nil {
 		log.Fatalln(err)
 	}
-
 }
 
 func RunApp() error {
+	tmpFile, err := os.Create("C:\\Users\\Роман\\test.txt")
+	if err != nil {
+		return err
+	}
+
+	defer tmpFile.Close()
+
+	w := iocustom.MultiWriteCloser(tmpFile, os.Stdout)
+
+	dto := app.DTO{
+		Stdout: w,
+		Stdin:  os.Stdin,
+	}
+
 	cfg := config.NewConfig()
-	err := cfg.InitFromFile("~/.pass-keeper.json")
+	err = cfg.InitFromFile("~/.pass-keeper.json")
 	if err != nil {
 		return errors.Wrap(err, "init config")
 	}
 	defer cfg.SaveToFile()
 
-	internal.FillKey(cfg)
+	dto.Config = cfg
 
-	storage, err := sqlite.New(cfg)
+	internal.FillConfig(dto.Config)
+
+	storage, err := sqlite.New(dto.Config, dto.Stdin, dto.Stdout)
 	if err != nil {
 		return errors.Wrap(err, "init storage")
 	}
 	defer storage.Close()
 
-	commands, err := internal.CollectCommands(storage, cfg)
+	dto.Storage = storage
+
+	commands, err := internal.CollectCommands(dto)
 	if err != nil {
 		return errors.Wrap(err, "init commands")
 	}
 
-	app, err := AppBuild(commands)
-	if err != nil {
-		return errors.Wrap(err, "build app")
+	application := &cli.App{
+		Commands: []*cli.Command{},
+		Reader:   dto.Stdin,
+		Writer:   dto.Stdout,
 	}
 
-	err = app.Run(os.Args)
+	application.EnableBashCompletion = true
+	application.UseShortOptionHandling = true
+
+	application.Commands = append(application.Commands, commands...)
+
+	err = application.Run(os.Args)
 	if err != nil {
 		return errors.Wrap(err, "app runtime")
 	}
 
 	return nil
-}
-
-func AppBuild(commands []*cli.Command) (*cli.App, error) {
-	app := &cli.App{
-		Commands: []*cli.Command{},
-	}
-
-	app.EnableBashCompletion = true
-	app.UseShortOptionHandling = true
-
-	app.Commands = append(app.Commands, commands...)
-
-	return app, nil
 }

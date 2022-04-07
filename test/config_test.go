@@ -1,8 +1,9 @@
-package config
+package test
 
 import (
 	"encoding/json"
 	"fmt"
+	"pass-keeper/internal/config"
 	"reflect"
 	"testing"
 )
@@ -10,7 +11,7 @@ import (
 func TestTypes(t *testing.T) {
 	str := "{\"a\":123, \"b\":\"тест\", \"c\":[\"one\", \"two\"], \"d\":{\"e\":\"1\", \"f\": \"2\"}}"
 
-	cfg := NewConfig()
+	cfg := config.NewConfig()
 	err := cfg.InitFromData([]byte(str))
 	if err != nil {
 		t.Error(err)

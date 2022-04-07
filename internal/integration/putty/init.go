@@ -2,28 +2,23 @@ package putty
 
 import (
 	"github.com/urfave/cli/v2"
-	"pass-keeper/internal/accesses/storage"
-	"pass-keeper/internal/config"
+	"pass-keeper/internal/app"
 	"pass-keeper/internal/integration/putty/parselnk"
 	"pass-keeper/internal/integration/putty/puttyrun"
 )
 
 type putty struct {
-	storage storage.Storage
-	config  *config.Config
+	app.DTO
 }
 
-func New(s storage.Storage, cfg *config.Config) *putty {
-	return &putty{
-		storage: s,
-		config:  cfg,
-	}
+func New(dto app.DTO) *putty {
+	return &putty{dto}
 }
 
 func (p *putty) Commands() []*cli.Command {
 	var commands []*cli.Command
-	commands = append(commands, parselnk.New(p.storage, p.config).Commands()...)
-	commands = append(commands, puttyrun.New(p.storage, p.config).Commands()...)
+	commands = append(commands, parselnk.New(p.DTO).Commands()...)
+	commands = append(commands, puttyrun.New(p.DTO).Commands()...)
 
 	return []*cli.Command{
 		{

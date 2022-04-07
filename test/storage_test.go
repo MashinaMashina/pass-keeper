@@ -1,15 +1,14 @@
-package tests
+package test
 
 import (
-	"pass-keeper/internal"
 	"pass-keeper/internal/accesses/accesstype"
 	"pass-keeper/internal/accesses/storage/params"
 	"testing"
 )
 
-func TestCRUD(t *testing.T) {
-	_, storage, err := internal.TestingConfigAndStorage()
-	defer storage.Close()
+func TestStorageCRUD(t *testing.T) {
+	dto, err := testingDTO()
+	defer dto.Storage.Close()
 	if err != nil {
 		t.Error(err)
 		return
@@ -27,7 +26,7 @@ func TestCRUD(t *testing.T) {
 	}
 
 	t.Log("add access")
-	err = storage.Add(access)
+	err = dto.Storage.Add(access)
 	if err != nil {
 		t.Error(err)
 		return
@@ -43,7 +42,7 @@ func TestCRUD(t *testing.T) {
 	}
 
 	t.Log("getting rows by parameters")
-	rows, err := storage.List(params.NewEq("name", access.Name()))
+	rows, err := dto.Storage.List(params.NewEq("name", access.Name()))
 	if err != nil {
 		t.Error(err)
 		return
@@ -71,7 +70,7 @@ func TestCRUD(t *testing.T) {
 	access.SetHost("new." + access.Host())
 
 	t.Log("save access")
-	err = storage.Save(access)
+	err = dto.Storage.Save(access)
 	if err != nil {
 		t.Error(err)
 		return
@@ -87,7 +86,7 @@ func TestCRUD(t *testing.T) {
 	}
 
 	t.Log("getting rows by parameters")
-	rows, err = storage.List(params.NewEq("name", access.Name()))
+	rows, err = dto.Storage.List(params.NewEq("name", access.Name()))
 	if err != nil {
 		t.Error(err)
 		return
@@ -113,14 +112,14 @@ func TestCRUD(t *testing.T) {
 	}
 
 	t.Log("remove access")
-	err = storage.Remove(access)
+	err = dto.Storage.Remove(access)
 	if err != nil {
 		t.Error(err)
 		return
 	}
 
 	t.Log("getting all rows")
-	rows, err = storage.List()
+	rows, err = dto.Storage.List()
 	if err != nil {
 		t.Error(err)
 		return
@@ -133,8 +132,8 @@ func TestCRUD(t *testing.T) {
 }
 
 func TestMultipleRows(t *testing.T) {
-	_, storage, err := internal.TestingConfigAndStorage()
-	defer storage.Close()
+	dto, err := testingDTO()
+	defer dto.Storage.Close()
 	if err != nil {
 		t.Error(err)
 		return
@@ -151,19 +150,19 @@ func TestMultipleRows(t *testing.T) {
 	access3 := accesstype.NewSSH()
 	access3.SetName("Какое-то имя 3")
 
-	err = storage.Add(access1)
+	err = dto.Storage.Add(access1)
 	if err != nil {
 		t.Error(err)
 		return
 	}
 
-	err = storage.Add(access2)
+	err = dto.Storage.Add(access2)
 	if err != nil {
 		t.Error(err)
 		return
 	}
 
-	err = storage.Save(access3)
+	err = dto.Storage.Save(access3)
 	if err != nil {
 		t.Error(err)
 		return
@@ -171,7 +170,7 @@ func TestMultipleRows(t *testing.T) {
 
 	t.Log("find rows in DB")
 
-	rows, err := storage.List()
+	rows, err := dto.Storage.List()
 	if err != nil {
 		t.Error(err)
 		return
@@ -183,13 +182,13 @@ func TestMultipleRows(t *testing.T) {
 	}
 
 	t.Log("remove one row")
-	err = storage.Remove(access2)
+	err = dto.Storage.Remove(access2)
 	if err != nil {
 		t.Error(err)
 		return
 	}
 
-	rows, err = storage.List()
+	rows, err = dto.Storage.List()
 	if err != nil {
 		t.Error(err)
 		return
@@ -201,7 +200,7 @@ func TestMultipleRows(t *testing.T) {
 	}
 
 	t.Log("get one row by equal filter")
-	rows, err = storage.List(params.NewEq("name", access3.Name()))
+	rows, err = dto.Storage.List(params.NewEq("name", access3.Name()))
 	if err != nil {
 		t.Error(err)
 		return
@@ -218,7 +217,7 @@ func TestMultipleRows(t *testing.T) {
 	}
 
 	t.Log("get one row by like filter")
-	rows, err = storage.List(params.NewLike("name", access1.Name()+"%"))
+	rows, err = dto.Storage.List(params.NewLike("name", access1.Name()+"%"))
 	if err != nil {
 		t.Error(err)
 		return

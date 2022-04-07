@@ -11,11 +11,15 @@ import (
 )
 
 func (m *master) initConfig() error {
-	if m.config.String("master.file") == "" {
-		m.config.Set("master.file", "~/.pass-keeper.master")
+	if m.Config.String("master.password") != "" {
+		return nil
 	}
 
-	masterFile, err := homedir.Expand(m.config.String("master.file"))
+	if m.Config.String("master.file") == "" {
+		m.Config.Set("master.file", "~/.pass-keeper.master")
+	}
+
+	masterFile, err := homedir.Expand(m.Config.String("master.file"))
 	if err != nil {
 		return err
 	}
@@ -49,7 +53,7 @@ func (m *master) initConfig() error {
 		return m.masterFileDialog(masterFile, "Не верный мастер пароль, введите мастер пароль заново:")
 	}
 
-	m.config.Set("master.password", pwd)
+	m.Config.Set("master.password", pwd)
 
 	return nil
 }
@@ -68,7 +72,7 @@ func (m *master) masterFileDialog(masterFile, message string) error {
 func (m *master) saveMasterPassword(masterFile, pwd string) error {
 	pwd = m.Hash(pwd)
 
-	m.config.Set("master.password", pwd)
+	m.Config.Set("master.password", pwd)
 
 	deviceKey, err := m.DeviceCryptoKey()
 	if err != nil {

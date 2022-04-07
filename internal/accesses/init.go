@@ -7,28 +7,23 @@ import (
 	accesslist "pass-keeper/internal/accesses/list"
 	accessremove "pass-keeper/internal/accesses/remove"
 	accessshow "pass-keeper/internal/accesses/show"
-	"pass-keeper/internal/accesses/storage"
-	"pass-keeper/internal/config"
+	"pass-keeper/internal/app"
 )
 
 type access struct {
-	storage storage.Storage
-	config  *config.Config
+	app.DTO
 }
 
-func New(s storage.Storage, cfg *config.Config) *access {
-	return &access{
-		storage: s,
-		config:  cfg,
-	}
+func New(dto app.DTO) *access {
+	return &access{dto}
 }
 
 func (p *access) Commands() []*cli.Command {
-	commands := accesslist.New(p.storage, p.config).Commands()
-	commands = append(commands, accessadd.New(p.storage, p.config).Commands()...)
-	commands = append(commands, accessedit.New(p.storage, p.config).Commands()...)
-	commands = append(commands, accessshow.New(p.storage, p.config).Commands()...)
-	commands = append(commands, accessremove.New(p.storage, p.config).Commands()...)
+	commands := accesslist.New(p.DTO).Commands()
+	commands = append(commands, accessadd.New(p.DTO).Commands()...)
+	commands = append(commands, accessedit.New(p.DTO).Commands()...)
+	commands = append(commands, accessshow.New(p.DTO).Commands()...)
+	commands = append(commands, accessremove.New(p.DTO).Commands()...)
 
 	return []*cli.Command{
 		{
