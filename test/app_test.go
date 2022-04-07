@@ -1,11 +1,12 @@
 package test
 
 import (
+	"bufio"
+	"bytes"
 	"fmt"
 	"github.com/pkg/errors"
 	"github.com/stretchr/testify/assert"
 	"io"
-	"io/ioutil"
 	"os"
 	"pass-keeper/internal/accesses/accesstype"
 	"pass-keeper/internal/accesses/storage/params"
@@ -18,11 +19,10 @@ import (
 var boundary = []byte("==--delimiter--==")
 
 type appCrudTestCase struct {
-	Args        []string
-	Comment     string
-	Before      func(io.Writer, io.Reader)
-	Check       func(*testing.T, app.DTO)
-	CheckOutput func(*testing.T, string)
+	Args    []string
+	Comment string
+	Before  func(io.Writer, io.Reader)
+	Check   func(*testing.T, app.DTO, string)
 }
 
 func TestAppCRUD(t *testing.T) {
@@ -37,14 +37,14 @@ func TestAppCRUD(t *testing.T) {
 
 	cases = append(cases, appCrudTestCase{
 		Args: []string{"access", "list"},
-		CheckOutput: func(t *testing.T, output string) {
+		Check: func(t *testing.T, dto app.DTO, output string) {
 			assert.Equal(t, "", strings.TrimSpace(output), "")
 		},
 	})
 
 	cases = append(cases, appCrudTestCase{
 		Args: []string{"access", "list", "-l"},
-		CheckOutput: func(t *testing.T, output string) {
+		Check: func(t *testing.T, dto app.DTO, output string) {
 			assert.Equalf(t, "Type Name Host Login Updated", strings.TrimSpace(output), "")
 		},
 	})
@@ -58,29 +58,28 @@ func TestAppCRUD(t *testing.T) {
 			fmt.Fprintln(w, access.Login())
 			fmt.Fprintln(w, access.Password())
 		},
-		Check: func(t *testing.T, dto app.DTO) {
-			rows, err := dto.Storage.List(params.NewEq("name", access.Name()))
-			if err != nil {
-				t.Error(err)
-				return
-			}
+		Check: func(t *testing.T, dto app.DTO, output string) {
+			if assert.Equalf(t, "Введите имя: Введите хост: Введите порт (по умолчанию 22): "+
+				"Введите логин: Введите пароль: Добавлено", strings.TrimSpace(output), "") {
+				rows, err := dto.Storage.List(params.NewEq("name", access.Name()))
+				if err != nil {
+					t.Error(err)
+					return
+				}
 
-			if len(rows) == 1 {
-				access.SetCreatedAt(rows[0].CreatedAt())
-				access.SetUpdatedAt(rows[0].UpdatedAt())
-			}
+				if len(rows) == 1 {
+					access.SetCreatedAt(rows[0].CreatedAt())
+					access.SetUpdatedAt(rows[0].UpdatedAt())
+				}
 
-			equalOneAccess(t, rows, access)
-		},
-		CheckOutput: func(t *testing.T, output string) {
-			assert.Equalf(t, "Введите имя: Введите хост: Введите порт (по умолчанию 22): "+
-				"Введите логин: Введите пароль: Добавлено", strings.TrimSpace(output), "")
+				equalOneAccess(t, rows, access)
+			}
 		},
 	})
 
 	cases = append(cases, appCrudTestCase{
 		Args: []string{"access", "show", access.Name()},
-		CheckOutput: func(t *testing.T, output string) {
+		Check: func(t *testing.T, dto app.DTO, output string) {
 			output = cleanLines(output)
 
 			expect := fmt.Sprintf("Имя %s\n"+
@@ -103,14 +102,14 @@ func TestAppCRUD(t *testing.T) {
 
 	cases = append(cases, appCrudTestCase{
 		Args: []string{"access", "list"},
-		CheckOutput: func(t *testing.T, output string) {
+		Check: func(t *testing.T, dto app.DTO, output string) {
 			assert.Equalf(t, access.Name(), strings.TrimSpace(output), "")
 		},
 	})
 
 	cases = append(cases, appCrudTestCase{
 		Args: []string{"access", "list", "-l"},
-		CheckOutput: func(t *testing.T, output string) {
+		Check: func(t *testing.T, dto app.DTO, output string) {
 			expect := fmt.Sprintf("Type Name Host Login Updated\n%s %s %s:%d %s %s",
 				access.Type(), access.Name(), access.Host(), access.Port(),
 				access.Login(), access.UpdatedAt().Format(dateFormat))
@@ -125,21 +124,20 @@ func TestAppCRUD(t *testing.T) {
 		Before: func(w io.Writer, r io.Reader) {
 			fmt.Fprint(w, "\n\n\n\n\n")
 		},
-		Check: func(t *testing.T, dto app.DTO) {
-			rows, err := dto.Storage.List(params.NewEq("name", access.Name()))
-			if err != nil {
-				t.Error(err)
-				return
-			}
-
-			equalOneAccess(t, rows, access)
-		},
-		CheckOutput: func(t *testing.T, output string) {
+		Check: func(t *testing.T, dto app.DTO, output string) {
 			except := fmt.Sprintf("Редактирование %s\nЕсли не хотите менять строку, пропускайте нажатием Enter\n"+
 				"Введите имя: Введите хост: Введите порт: Введите логин: Введите пароль: Нечего менять",
 				access.Name())
 
-			assert.Equalf(t, except, strings.TrimSpace(output), "")
+			if assert.Equalf(t, except, strings.TrimSpace(output), "") {
+				rows, err := dto.Storage.List(params.NewEq("name", access.Name()))
+				if err != nil {
+					t.Error(err)
+					return
+				}
+
+				equalOneAccess(t, rows, access)
+			}
 		},
 	})
 
@@ -160,26 +158,25 @@ func TestAppCRUD(t *testing.T) {
 			fmt.Fprintln(w, access2.Login())
 			fmt.Fprintln(w, access2.Password())
 		},
-		Check: func(t *testing.T, dto app.DTO) {
-			rows, err := dto.Storage.List(params.NewEq("name", access2.Name()))
-			if err != nil {
-				t.Error(err)
-				return
-			}
-
-			if len(rows) == 1 {
-				access2.SetCreatedAt(rows[0].CreatedAt())
-				access2.SetUpdatedAt(rows[0].UpdatedAt())
-			}
-
-			equalOneAccess(t, rows, access2)
-		},
-		CheckOutput: func(t *testing.T, output string) {
+		Check: func(t *testing.T, dto app.DTO, output string) {
 			expect := fmt.Sprintf("Редактирование %s\n"+
 				"Если не хотите менять строку, пропускайте нажатием Enter\n"+
 				"Введите имя: Введите хост: Введите порт: Введите логин: Введите пароль: Обновлены поля: имя, хост, порт, логин, пароль", access.Name())
 
-			assert.Equalf(t, expect, strings.TrimSpace(output), "")
+			if assert.Equalf(t, expect, strings.TrimSpace(output), "") {
+				rows, err := dto.Storage.List(params.NewEq("name", access2.Name()))
+				if err != nil {
+					t.Error(err)
+					return
+				}
+
+				if len(rows) == 1 {
+					access2.SetCreatedAt(rows[0].CreatedAt())
+					access2.SetUpdatedAt(rows[0].UpdatedAt())
+				}
+
+				equalOneAccess(t, rows, access2)
+			}
 		},
 	})
 
@@ -189,19 +186,18 @@ func TestAppCRUD(t *testing.T) {
 		Before: func(w io.Writer, r io.Reader) {
 			fmt.Fprintln(w, "n")
 		},
-		Check: func(t *testing.T, dto app.DTO) {
-			rows, err := dto.Storage.List(params.NewEq("name", access2.Name()))
-			if err != nil {
-				t.Error(err)
-				return
-			}
-
-			equalOneAccess(t, rows, access2)
-		},
-		CheckOutput: func(t *testing.T, output string) {
+		Check: func(t *testing.T, dto app.DTO, output string) {
 			expect := fmt.Sprintf("Удалить %s? (Y/n)", access2.Name())
 
-			assert.Equalf(t, expect, strings.TrimSpace(output), "")
+			if assert.Equalf(t, expect, strings.TrimSpace(output), "") {
+				rows, err := dto.Storage.List(params.NewEq("name", access2.Name()))
+				if err != nil {
+					t.Error(err)
+					return
+				}
+
+				equalOneAccess(t, rows, access2)
+			}
 		},
 	})
 
@@ -211,22 +207,21 @@ func TestAppCRUD(t *testing.T) {
 		Before: func(w io.Writer, r io.Reader) {
 			fmt.Fprintln(w, "y")
 		},
-		Check: func(t *testing.T, dto app.DTO) {
-			rows, err := dto.Storage.List(params.NewEq("name", access2.Name()))
-			if err != nil {
-				t.Error(err)
-				return
-			}
-
-			if len(rows) != 0 {
-				t.Error("access not removed")
-				return
-			}
-		},
-		CheckOutput: func(t *testing.T, output string) {
+		Check: func(t *testing.T, dto app.DTO, output string) {
 			expect := fmt.Sprintf("Удалить %s? (Y/n) Удалено", access2.Name())
 
-			assert.Equalf(t, expect, strings.TrimSpace(output), "")
+			if assert.Equalf(t, expect, strings.TrimSpace(output), "") {
+				rows, err := dto.Storage.List(params.NewEq("name", access2.Name()))
+				if err != nil {
+					t.Error(err)
+					return
+				}
+
+				if len(rows) != 0 {
+					t.Error("access not removed")
+					return
+				}
+			}
 		},
 	})
 
@@ -246,6 +241,22 @@ func appCRUDTestOutput(t *testing.T, cases []appCrudTestCase) {
 	if err != nil {
 		return
 	}
+
+	bufscan := bufio.NewScanner(outReader)
+	bufscan.Split(func(data []byte, atEOF bool) (advance int, token []byte, err error) {
+		if atEOF && len(data) == 0 {
+			return 0, nil, nil
+		}
+		if i := bytes.Index(data, boundary); i >= 0 {
+			return i + len(boundary), data[0:i], nil
+		}
+		// If we're at EOF, we have a final, non-terminated line. Return it.
+		if atEOF {
+			return len(data), data, nil
+		}
+		// Request more data.
+		return 0, nil, nil
+	})
 
 	stdout = out
 	stdin = in
@@ -281,44 +292,15 @@ func appCRUDTestOutput(t *testing.T, cases []appCrudTestCase) {
 			return
 		}
 
-		if testCase.Check != nil {
-			testCase.Check(t, dto)
+		out.Write(boundary)
+
+		if testCase.Check != nil && bufscan.Scan() {
+			testCase.Check(t, dto, bufscan.Text())
 		}
 
-		out.Write(boundary)
 	}
 
 	out.Close()
-
-	result, err := ioutil.ReadAll(outReader)
-	if err != nil {
-		t.Error(err)
-		return
-	}
-
-	results := strings.Split(string(result), string(boundary))
-
-	if len(results) != len(cases)+1 {
-		t.Error("invalid boundary")
-		return
-	}
-
-	t.Log("")
-
-	for i, testCase := range cases {
-		msg := "Check output from "
-		msg += "\"" + strings.Join(testCase.Args, " ") + "\""
-
-		if testCase.Comment != "" {
-			msg += fmt.Sprintf(" (%s)", testCase.Comment)
-		}
-
-		t.Log(msg)
-
-		if testCase.CheckOutput != nil {
-			testCase.CheckOutput(t, results[i])
-		}
-	}
 }
 
 var regexpSpaces = regexp.MustCompile(`[\t\f\r ]{2,}|\t`)
