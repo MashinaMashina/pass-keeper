@@ -16,6 +16,10 @@ func FillConfig(cfg *config.Config) {
 	cfg.Set("main.date_format", "15:04 02/01/06")
 }
 
+func ConfigFile() string {
+	return configFile
+}
+
 func CollectCommands(dto app.DTO) ([]*cli.Command, error) {
 	var commands []*cli.Command
 

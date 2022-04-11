@@ -1,8 +1,10 @@
 package parselnk
 
 import (
+	"errors"
 	"fmt"
 	"github.com/urfave/cli/v2"
+	"os"
 	"pass-keeper/internal/accesses/accesstype"
 	"pass-keeper/pkg/filesystem"
 	"path/filepath"
@@ -10,15 +12,32 @@ import (
 )
 
 func (lp *linkParser) action(c *cli.Context) error {
-	folder, err := filepath.Abs(c.String("path"))
+	path, err := filepath.Abs(c.String("path"))
 
 	if err != nil {
 		return err
 	}
 
-	files, err := filesystem.ReadDir(folder)
+	f, err := filesystem.Stat(path)
+
 	if err != nil {
-		return err
+		if errors.Is(err, os.ErrNotExist) {
+			f, err = filesystem.Stat(path + ".lnk")
+		}
+
+		if err != nil {
+			return err
+		}
+	}
+
+	var files []filesystem.File
+	if f.IsDir() {
+		files, err = filesystem.ReadDir(path)
+		if err != nil {
+			return err
+		}
+	} else {
+		files = append(files, f)
 	}
 
 	var access accesstype.Access
@@ -27,7 +46,7 @@ func (lp *linkParser) action(c *cli.Context) error {
 			continue
 		}
 
-		fmt.Fprintln(lp.Stdout, "Scan", file.Name())
+		fmt.Fprintln(lp.Stdout, fmt.Sprintf("Scan \"%s\"", file.Name()))
 
 		access, err = lp.sshAccessByLnkFile(file)
 

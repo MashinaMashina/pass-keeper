@@ -26,7 +26,7 @@ type Access interface {
 	Type() string
 	SetType(typo string)
 	Name() string
-	SetName(typo string)
+	SetName(name string)
 	Host() string
 	SetHost(host string)
 	Port() int

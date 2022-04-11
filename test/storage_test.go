@@ -19,6 +19,7 @@ func TestStorageCRUD(t *testing.T) {
 	access.SetHost("host.com")
 	access.SetLogin("user")
 	access.SetPassword("qwerty123")
+	access.SetSession("some sess")
 
 	if access.ID() != 0 {
 		t.Error("invalid id of new record:", access.ID())
@@ -62,7 +63,8 @@ func TestStorageCRUD(t *testing.T) {
 		rows[0].Host() != access.Host() ||
 		rows[0].Login() != access.Login() ||
 		rows[0].Password() != access.Password() ||
-		rows[0].Port() != access.Port() {
+		rows[0].Port() != access.Port() ||
+		rows[0].Session() != access.Session() {
 		t.Error("invalid row in db")
 		return
 	}
@@ -106,7 +108,8 @@ func TestStorageCRUD(t *testing.T) {
 		rows[0].Host() != access.Host() ||
 		rows[0].Login() != access.Login() ||
 		rows[0].Password() != access.Password() ||
-		rows[0].Port() != access.Port() {
+		rows[0].Port() != access.Port() ||
+		rows[0].Session() != access.Session() {
 		t.Error("invalid row in db")
 		return
 	}

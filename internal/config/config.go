@@ -10,9 +10,10 @@ import (
 )
 
 type Config struct {
-	values   map[string]interface{}
-	virtuals []string
-	initFile string
+	values    map[string]interface{}
+	virtuals  []string
+	initFile  string
+	hasChange bool
 }
 
 func NewConfig() *Config {
@@ -21,7 +22,27 @@ func NewConfig() *Config {
 	}
 }
 
+func (c *Config) HasChange() bool {
+	return c.hasChange
+}
+
 func (c *Config) Set(k string, v interface{}) {
+	if c.Get(k) == v {
+		return
+	}
+
+	isVirt := false
+	for _, val := range c.virtuals {
+		if val == k {
+			isVirt = true
+			break
+		}
+	}
+
+	if !isVirt {
+		c.hasChange = true
+	}
+
 	c.values[k] = v
 }
 
@@ -56,6 +77,8 @@ func (c *Config) String(k string) string {
 func (c *Config) Map(k string) map[string]string {
 	val := c.Get(k)
 	switch val.(type) {
+	case map[string]string:
+		return val.(map[string]string)
 	case map[string]interface{}:
 		res := make(map[string]string)
 		for k, v := range val.(map[string]interface{}) {
@@ -71,6 +94,8 @@ func (c *Config) Map(k string) map[string]string {
 func (c *Config) Slice(k string) []string {
 	val := c.Get(k)
 	switch val.(type) {
+	case []string:
+		return val.([]string)
 	case []interface{}:
 		var res []string
 		for _, v := range val.([]interface{}) {
@@ -114,6 +139,10 @@ func (c *Config) InitFromData(b []byte) error {
 }
 
 func (c *Config) SaveToFile(file ...string) error {
+	if !c.hasChange {
+		return nil
+	}
+
 	var f string
 	if len(file) == 0 {
 		f = c.initFile

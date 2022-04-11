@@ -38,7 +38,7 @@ func (m *master) initConfig() error {
 		return err
 	}
 
-	deviceKey, err := m.DeviceCryptoKey()
+	deviceKey, err := m.deviceCryptoKey(m.Config.String("main.key"))
 	if err != nil {
 		return err
 	}
@@ -70,11 +70,11 @@ func (m *master) masterFileDialog(masterFile, message string) error {
 }
 
 func (m *master) saveMasterPassword(masterFile, pwd string) error {
-	pwd = m.Hash(pwd)
+	pwd = m.hash(pwd)
 
 	m.Config.Set("master.password", pwd)
 
-	deviceKey, err := m.DeviceCryptoKey()
+	deviceKey, err := m.deviceCryptoKey(m.Config.String("main.key"))
 	if err != nil {
 		return err
 	}

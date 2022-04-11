@@ -1,39 +1,28 @@
-package test
+package master
 
 import (
 	"encoding/hex"
-	"pass-keeper/internal/master"
 	"pass-keeper/pkg/encrypt"
 	"testing"
 )
 
 func TestHash(t *testing.T) {
-	dto, err := testingDTO()
-	if err != nil {
-		t.Error(err)
-	}
-	defer dto.Storage.Close()
+	m := &master{}
 
-	m := master.New(dto)
+	hashed := m.hash("test")
 
-	hashed := m.Hash("test")
-
-	_, err = hex.DecodeString(hashed)
+	_, err := hex.DecodeString(hashed)
 	if err != nil {
 		t.Errorf("hash must be hex decodable: %v", err)
 	}
 }
 
 func TestDeviceCryptoKey(t *testing.T) {
-	dto, err := testingDTO()
-	if err != nil {
-		t.Error(err)
-	}
-	defer dto.Storage.Close()
+	m := &master{}
 
-	m := master.New(dto)
+	mainKey := "c4ca4238a0b923820dcc509a6f75849b"
 
-	key, err := m.DeviceCryptoKey()
+	key, err := m.deviceCryptoKey(mainKey)
 	if err != nil {
 		t.Error(err)
 	}

@@ -5,6 +5,7 @@ go 1.17
 require (
 	github.com/Djarvur/go-aescrypt v0.1.1
 	github.com/Masterminds/squirrel v1.5.2
+	github.com/chzyer/readline v0.0.0-20180603132655-2972be24d48e
 	github.com/denisbrodbeck/machineid v1.0.1
 	github.com/manifoldco/promptui v0.9.0
 	github.com/mattn/go-sqlite3 v1.14.12
@@ -12,11 +13,11 @@ require (
 	github.com/parsiya/golnk v0.0.0-20200515071614-5db3107130ce
 	github.com/pkg/errors v0.9.1
 	github.com/rodaine/table v1.0.1
+	github.com/stretchr/testify v1.7.1
 	github.com/urfave/cli/v2 v2.4.0
 )
 
 require (
-	github.com/chzyer/readline v0.0.0-20180603132655-2972be24d48e // indirect
 	github.com/cpuguy83/go-md2man/v2 v2.0.1 // indirect
 	github.com/davecgh/go-spew v1.1.1 // indirect
 	github.com/lann/builder v0.0.0-20180802200727-47ae307949d0 // indirect
@@ -25,8 +26,6 @@ require (
 	github.com/olekukonko/tablewriter v0.0.5 // indirect
 	github.com/pmezard/go-difflib v1.0.0 // indirect
 	github.com/russross/blackfriday/v2 v2.1.0 // indirect
-	github.com/stretchr/objx v0.3.0 // indirect
-	github.com/stretchr/testify v1.7.1 // indirect
 	golang.org/x/sys v0.0.0-20201119102817-f84b799fce68 // indirect
 	gopkg.in/yaml.v3 v3.0.0-20210107192922-496545a6307b // indirect
 )

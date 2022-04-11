@@ -8,6 +8,7 @@ import (
 	"net/url"
 	"pass-keeper/internal/accesses/accesstype"
 	"pass-keeper/pkg/filesystem"
+	"pass-keeper/pkg/flagcustom"
 	"strings"
 )
 
@@ -20,10 +21,13 @@ func (lp *linkParser) sshAccessByLnkFile(file filesystem.File) (accesstype.Acces
 		return nil, err
 	}
 
-	return lp.sshAccessByLnk(lnk, file.Name())
+	name := strings.TrimSuffix(file.Name(), ".lnk")
+	name = lp.cleanFilename(name)
+
+	return lp.accessByArguments(lnk.StringData.CommandLineArguments, name)
 }
 
-func (lp *linkParser) sshAccessByLnk(lnk lnk2.LnkFile, name string) (accesstype.Access, error) {
+func (lp *linkParser) accessByArguments(args, name string) (accesstype.Access, error) {
 	flagSet := flag.NewFlagSet("", flag.ContinueOnError)
 
 	sshUri := flagSet.String("ssh", "", "SSH")
@@ -31,7 +35,12 @@ func (lp *linkParser) sshAccessByLnk(lnk lnk2.LnkFile, name string) (accesstype.
 	port := flagSet.Int("P", 22, "Port")
 	sess := flagSet.String("load", "", "putty session")
 
-	err := flagSet.Parse(strings.Split(lnk.StringData.CommandLineArguments, " "))
+	flags, err := flagcustom.ParseFlags(args)
+	if err != nil {
+		return nil, err
+	}
+
+	err = flagSet.Parse(flags)
 	if err != nil {
 		return nil, errors.Wrap(err, fmt.Sprintf("parse \"%s\" flags", name))
 	}
@@ -40,9 +49,6 @@ func (lp *linkParser) sshAccessByLnk(lnk lnk2.LnkFile, name string) (accesstype.
 	if err != nil {
 		return nil, errors.Wrap(err, fmt.Sprintf("parsing %s", *sshUri))
 	}
-
-	name = strings.TrimSuffix(name, ".lnk")
-	name = lp.cleanFilename(name)
 
 	sshAccess := accesstype.NewSSH()
 	sshAccess.SetName(name)

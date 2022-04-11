@@ -4,7 +4,20 @@ import (
 	"errors"
 	"io/ioutil"
 	"os"
+	"path/filepath"
 )
+
+func Stat(path string) (File, error) {
+	fileInfo, err := os.Stat(path)
+
+	if err != nil {
+		return nil, err
+	}
+
+	dirname, _ := filepath.Split(path)
+
+	return NewFile(fileInfo, dirname), nil
+}
 
 func IsDir(path string) (bool, error) {
 	fileInfo, err := os.Stat(path)

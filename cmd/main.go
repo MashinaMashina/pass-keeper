@@ -25,7 +25,7 @@ func RunApp() error {
 	}
 
 	cfg := config.NewConfig()
-	err := cfg.InitFromFile("~/.pass-keeper.json")
+	err := cfg.InitFromFile(internal.ConfigFile())
 	if err != nil {
 		return errors.Wrap(err, "init config")
 	}
