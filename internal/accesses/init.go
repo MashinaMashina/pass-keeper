@@ -2,11 +2,12 @@ package accesses
 
 import (
 	"github.com/urfave/cli/v2"
-	accessadd "pass-keeper/internal/accesses/add"
-	accessedit "pass-keeper/internal/accesses/edit"
-	accesslist "pass-keeper/internal/accesses/list"
-	accessremove "pass-keeper/internal/accesses/remove"
-	accessshow "pass-keeper/internal/accesses/show"
+	"pass-keeper/internal/accesses/action/add"
+	"pass-keeper/internal/accesses/action/edit"
+	"pass-keeper/internal/accesses/action/list"
+	"pass-keeper/internal/accesses/action/remove"
+	"pass-keeper/internal/accesses/action/show"
+	accessvalidate "pass-keeper/internal/accesses/action/validate"
 	"pass-keeper/internal/app"
 )
 
@@ -24,11 +25,12 @@ func (p *access) Commands() []*cli.Command {
 	commands = append(commands, accessedit.New(p.DTO).Commands()...)
 	commands = append(commands, accessshow.New(p.DTO).Commands()...)
 	commands = append(commands, accessremove.New(p.DTO).Commands()...)
+	commands = append(commands, accessvalidate.New(p.DTO).Commands()...)
 
 	return []*cli.Command{
 		{
 			Name:        "access",
-			Usage:       "Доступы",
+			Usage:       "Accesses",
 			Subcommands: commands,
 		},
 	}

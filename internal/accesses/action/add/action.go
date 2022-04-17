@@ -19,7 +19,7 @@ func (l *accessAdd) action(c *cli.Context) error {
 
 	if value = c.String("type"); value == "" {
 		promt := promptui.Select{
-			Label:  "Выберите тип",
+			Label:  "Choose type",
 			Items:  []string{"ssh"},
 			Stdout: clibell.Instance(l.Stdout),
 		}
@@ -59,11 +59,11 @@ func (l *accessAdd) action(c *cli.Context) error {
 			access.SetName(value)
 			break
 		} else {
-			fmt.Fprintln(l.Stdout, "Такое имя уже есть, выберите другое")
+			fmt.Fprintln(l.Stdout, "Name is exists, choose another name")
 		}
 	}
 
-	fmt.Fprint(l.Stdout, "Введите хост: ")
+	fmt.Fprint(l.Stdout, "Enter hostname: ")
 	value = ""
 	_, err = fmt.Fscanln(l.Stdin, &value)
 	if err != nil && err.Error() != "unexpected newline" {
@@ -73,9 +73,9 @@ func (l *accessAdd) action(c *cli.Context) error {
 		access.SetHost(value)
 	}
 
-	fmt.Fprint(l.Stdout, "Введите порт")
+	fmt.Fprint(l.Stdout, "Enter port: ")
 	if access.Port() != 0 {
-		fmt.Fprint(l.Stdout, " (по умолчанию ", access.Port(), ")")
+		fmt.Fprint(l.Stdout, " (by default ", access.Port(), ")")
 	}
 	fmt.Fprint(l.Stdout, ": ")
 
@@ -92,7 +92,7 @@ func (l *accessAdd) action(c *cli.Context) error {
 		access.SetPort(port)
 	}
 
-	fmt.Fprint(l.Stdout, "Введите логин: ")
+	fmt.Fprint(l.Stdout, "Enter login: ")
 	value = ""
 	_, err = fmt.Fscanln(l.Stdin, &value)
 	if err != nil && err.Error() != "unexpected newline" {
@@ -102,7 +102,7 @@ func (l *accessAdd) action(c *cli.Context) error {
 		access.SetLogin(value)
 	}
 
-	fmt.Fprint(l.Stdout, "Введите пароль: ")
+	fmt.Fprint(l.Stdout, "Enter password: ")
 	value = ""
 	_, err = fmt.Fscanln(l.Stdin, &value)
 	if err != nil && err.Error() != "unexpected newline" {
@@ -117,7 +117,7 @@ func (l *accessAdd) action(c *cli.Context) error {
 		return err
 	}
 
-	fmt.Fprintln(l.Stdout, "Добавлено")
+	fmt.Fprintln(l.Stdout, "Success add")
 
 	return nil
 }

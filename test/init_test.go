@@ -190,7 +190,8 @@ func equalAccess(t *testing.T, expect, real accesstype.Access) bool {
 		expect.Port() != real.Port() ||
 		expect.Login() != real.Login() ||
 		expect.Password() != real.Password() ||
-		expect.Session() != real.Session() {
+		expect.Session() != real.Session() ||
+		expect.Valid() != real.Valid() {
 		t.Error(fmt.Sprintf("accesses not equal\nexpected: %+v,\nbut real %+v", expect, real))
 
 		return false

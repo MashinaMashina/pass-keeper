@@ -30,7 +30,7 @@ func (m *master) initConfig() error {
 	}
 
 	if !exists {
-		return m.masterFileDialog(masterFile, "Не найден файл с мастер паролем, введите мастер пароль:")
+		return m.masterFileDialog(masterFile, "Master password file not found, please enter master password:")
 	}
 
 	bytes, err := ioutil.ReadFile(masterFile)
@@ -45,12 +45,12 @@ func (m *master) initConfig() error {
 
 	pwd, err := encrypt.DecryptAES(deviceKey, string(bytes))
 	if err != nil {
-		return m.masterFileDialog(masterFile, "Не верный мастер пароль, введите мастер пароль заново:")
+		return m.masterFileDialog(masterFile, "Wrong master password, please re-enter the master password:")
 	}
 
 	_, err = hex.DecodeString(pwd)
 	if err != nil {
-		return m.masterFileDialog(masterFile, "Не верный мастер пароль, введите мастер пароль заново:")
+		return m.masterFileDialog(masterFile, "Wrong master password, please re-enter the master password:")
 	}
 
 	m.Config.Set("master.password", pwd)

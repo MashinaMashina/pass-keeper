@@ -20,7 +20,7 @@ func (l *accessShow) Commands() []*cli.Command {
 
 	commands = append(commands, &cli.Command{
 		Name:   "show",
-		Usage:  "Информация о доступе",
+		Usage:  "Access info",
 		Action: l.action,
 	})
 

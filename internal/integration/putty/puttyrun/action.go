@@ -14,8 +14,8 @@ import (
 
 func (lp *puttyRun) action(c *cli.Context) error {
 	if lp.Config.String("putty.app") == "" {
-		fmt.Fprintln(lp.Stdout, "Не указан адрес приложения Putty")
-		fmt.Fprintln(lp.Stdout, "Введите адрес exe файла:")
+		fmt.Fprintln(lp.Stdout, "Putty application address not specified")
+		fmt.Fprintln(lp.Stdout, "Enter the address of the exe file:")
 		var path string
 		err := iocustom.Fscanln(lp.Stdin, &path)
 
@@ -26,15 +26,15 @@ func (lp *puttyRun) action(c *cli.Context) error {
 		stat, err := os.Stat(path)
 		if err != nil {
 			if errors.Is(err, os.ErrNotExist) {
-				fmt.Fprintln(lp.Stdout, "Нет такого файла")
+				fmt.Fprintln(lp.Stdout, "No such file")
 			} else {
-				fmt.Fprintln(lp.Stdout, "Неверный адрес приложения", err)
+				fmt.Fprintln(lp.Stdout, "Invalid application address", err)
 			}
 			return nil
 		}
 
 		if stat.IsDir() {
-			fmt.Fprintln(lp.Stdout, "Вы указали адрес папки, укажите адрес файла")
+			fmt.Fprintln(lp.Stdout, "You have specified the folder address, specify the file address")
 			return nil
 		}
 
@@ -55,7 +55,7 @@ func (lp *puttyRun) action(c *cli.Context) error {
 		return err
 	}
 
-	fmt.Fprintln(lp.Stdout, "Запуск "+access.Name())
+	fmt.Fprintln(lp.Stdout, "Starting "+access.Name())
 
 	err = exec.Command(app, lp.argsFromAccess(access)...).Start()
 	if err != nil {

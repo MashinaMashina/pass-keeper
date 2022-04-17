@@ -34,15 +34,15 @@ func (l *accessShow) show(row accesstype.Access) error {
 		isValid = "Да"
 	}
 
-	tbl.AddRow("Имя", row.Name())
-	tbl.AddRow("Хост", row.Host())
-	tbl.AddRow("Порт", row.Port())
-	tbl.AddRow("Логин", row.Login())
-	tbl.AddRow("Пароль", row.Password())
-	tbl.AddRow("Имя сессии", row.Session())
-	tbl.AddRow("Валиден", isValid)
-	tbl.AddRow("Добавлен", row.CreatedAt().Format(l.Config.String("main.date_format")))
-	tbl.AddRow("Изменен", row.UpdatedAt().Format(l.Config.String("main.date_format")))
+	tbl.AddRow("Name", row.Name())
+	tbl.AddRow("Host", row.Host())
+	tbl.AddRow("Port", row.Port())
+	tbl.AddRow("Login", row.Login())
+	tbl.AddRow("Password", row.Password())
+	tbl.AddRow("Session name", row.Session())
+	tbl.AddRow("Valid", isValid)
+	tbl.AddRow("Added", row.CreatedAt().Format(l.Config.String("main.date_format")))
+	tbl.AddRow("Updated", row.UpdatedAt().Format(l.Config.String("main.date_format")))
 
 	tbl.Print()
 

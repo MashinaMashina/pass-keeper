@@ -20,12 +20,12 @@ func (l *accessAdd) Commands() []*cli.Command {
 
 	commands = append(commands, &cli.Command{
 		Name:   "add",
-		Usage:  "Добавить доступ",
+		Usage:  "Add access",
 		Action: l.action,
 		Flags: []cli.Flag{
 			&cli.StringFlag{
 				Name:        "type",
-				Usage:       "Тип доступа",
+				Usage:       "Access type",
 				Required:    false,
 				Destination: nil,
 			},

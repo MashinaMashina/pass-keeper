@@ -20,7 +20,7 @@ func (l *accessEdit) Commands() []*cli.Command {
 
 	commands = append(commands, &cli.Command{
 		Name:   "edit",
-		Usage:  "Изменить доступ",
+		Usage:  "Edit access",
 		Action: l.action,
 	})
 

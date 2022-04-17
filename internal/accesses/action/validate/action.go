@@ -1,50 +1,77 @@
-package accessshow
+package accessvalidate
 
 import (
-	"github.com/rodaine/table"
+	"errors"
+	"fmt"
 	"github.com/urfave/cli/v2"
 	"pass-keeper/internal/accesses/accesstype"
 	"pass-keeper/internal/accesses/storage"
 	"pass-keeper/internal/accesses/storage/params"
+	"pass-keeper/internal/accesses/validate"
 )
 
-func (l *accessShow) action(c *cli.Context) error {
-	var likeParam storage.Param
+func (l *accessValidate) action(c *cli.Context) error {
+	var parameters []storage.Param
 
 	if c.Args().First() != "" {
-		likeParam = params.NewLike("name", c.Args().First()+"%")
+		parameters = append(parameters, params.NewLike("name", c.Args().First()+"%"))
 	}
 
-	row, err := l.Storage.FindOne(likeParam)
-	if err != nil {
-		return err
+	var rows []accesstype.Access
+
+	if !c.Bool("all") {
+		row, err := l.Storage.FindOne(parameters...)
+		if err != nil {
+			return err
+		}
+
+		rows = append(rows, row)
+	} else {
+		var err error
+		rows, err = l.Storage.List(parameters...)
+
+		if err != nil {
+			return err
+		}
 	}
 
-	return l.show(row)
+	verifyUnknownHosts := !c.Bool("allow-all-hosts")
+	for _, row := range rows {
+		l.validateRow(row, verifyUnknownHosts)
+	}
+
+	return nil
 }
 
-func (l *accessShow) show(row accesstype.Access) error {
-	tbl := table.New("", "")
+func (l *accessValidate) validateRow(access accesstype.Access, verifyUnknownHosts bool) error {
+	fmt.Fprint(l.Stdout, "Checking ", access.Name(), ": ")
 
-	tbl.WithWriter(l.Stdout)
-	tbl.WithPadding(1)
+	var (
+		valid bool
+		err   error
+	)
 
-	isValid := "Нет"
-	if row.Valid() {
-		isValid = "Да"
+	switch access.Type() {
+	case "ssh":
+		valid, err = validate.ValidateSSH(access, verifyUnknownHosts, l.Stdout, l.Stdin)
+	default:
+		return errors.New("not found validator")
 	}
 
-	tbl.AddRow("Имя", row.Name())
-	tbl.AddRow("Хост", row.Host())
-	tbl.AddRow("Порт", row.Port())
-	tbl.AddRow("Логин", row.Login())
-	tbl.AddRow("Пароль", row.Password())
-	tbl.AddRow("Имя сессии", row.Session())
-	tbl.AddRow("Валиден", isValid)
-	tbl.AddRow("Добавлен", row.CreatedAt().Format(l.Config.String("main.date_format")))
-	tbl.AddRow("Изменен", row.UpdatedAt().Format(l.Config.String("main.date_format")))
+	if valid {
+		fmt.Fprintln(l.Stdout, "is valid")
+	} else {
+		fmt.Fprintln(l.Stdout, "not valid")
+	}
 
-	tbl.Print()
+	if err != nil {
+		fmt.Fprintln(l.Stdout, "Error:", err)
+	}
+
+	if access.Valid() != valid {
+		access.SetValid(valid)
+		l.Storage.Save(access)
+	}
 
 	return nil
 }

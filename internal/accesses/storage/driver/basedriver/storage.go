@@ -161,7 +161,7 @@ func (s *BaseDriver) FindExists(access accesstype.Access) (accesstype.Access, er
 
 func (s *BaseDriver) List(params ...storage.Param) ([]accesstype.Access, error) {
 	query := squirrel.
-		Select("id", "type", "name", "host", "login", "port", "password", "session", "created_at", "updated_at").
+		Select("id", "type", "name", "host", "login", "port", "password", "session", "valid", "created_at", "updated_at").
 		From("accesses")
 
 	for _, param := range params {
@@ -225,7 +225,7 @@ func (s *BaseDriver) FindOne(parameters ...storage.Param) (accesstype.Access, er
 		var res string
 
 		promt := promptui.Select{
-			Label:  "Доступно несколько вариантов",
+			Label:  "Multiple options available",
 			Items:  names,
 			Stdout: clibell.Instance(s.Stdout),
 		}
@@ -255,12 +255,13 @@ func (s *BaseDriver) decodeRow(rows *sql.Rows) (accesstype.Access, error) {
 	var port int
 	var password string
 	var session string
+	var valid bool
 	var access accesstype.Access
 	var err error
 	var createdAt int64
 	var updatedAt int64
 
-	if err = rows.Scan(&id, &typo, &name, &host, &login, &port, &password, &session, &createdAt, &updatedAt); err != nil {
+	if err = rows.Scan(&id, &typo, &name, &host, &login, &port, &password, &session, &valid, &createdAt, &updatedAt); err != nil {
 		return nil, errors.Wrap(err, "scanning storage data to variables")
 	}
 
@@ -288,6 +289,7 @@ func (s *BaseDriver) decodeRow(rows *sql.Rows) (accesstype.Access, error) {
 	access.SetPort(port)
 	access.SetPassword(password)
 	access.SetSession(session)
+	access.SetValid(valid)
 	access.SetCreatedAt(time.Unix(createdAt, 0))
 	access.SetUpdatedAt(time.Unix(updatedAt, 0))
 

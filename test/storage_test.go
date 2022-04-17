@@ -59,17 +59,12 @@ func TestStorageCRUD(t *testing.T) {
 		return
 	}
 
-	if rows[0].Name() != access.Name() ||
-		rows[0].Host() != access.Host() ||
-		rows[0].Login() != access.Login() ||
-		rows[0].Password() != access.Password() ||
-		rows[0].Port() != access.Port() ||
-		rows[0].Session() != access.Session() {
-		t.Error("invalid row in db")
+	if !equalAccess(t, access, rows[0]) {
 		return
 	}
 
 	access.SetHost("new." + access.Host())
+	access.SetValid(true)
 
 	t.Log("save access")
 	err = dto.Storage.Save(access)
@@ -104,13 +99,7 @@ func TestStorageCRUD(t *testing.T) {
 		return
 	}
 
-	if rows[0].Name() != access.Name() ||
-		rows[0].Host() != access.Host() ||
-		rows[0].Login() != access.Login() ||
-		rows[0].Password() != access.Password() ||
-		rows[0].Port() != access.Port() ||
-		rows[0].Session() != access.Session() {
-		t.Error("invalid row in db")
+	if !equalAccess(t, access, rows[0]) {
 		return
 	}
 

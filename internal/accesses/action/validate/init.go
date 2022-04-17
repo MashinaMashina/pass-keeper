@@ -1,26 +1,37 @@
-package accessshow
+package accessvalidate
 
 import (
 	"github.com/urfave/cli/v2"
 	"pass-keeper/internal/app"
 )
 
-type accessShow struct {
+type accessValidate struct {
 	app.DTO
 }
 
-func New(dto app.DTO) *accessShow {
-	a := &accessShow{dto}
+func New(dto app.DTO) *accessValidate {
+	a := &accessValidate{dto}
 
 	return a
 }
 
-func (l *accessShow) Commands() []*cli.Command {
+func (l *accessValidate) Commands() []*cli.Command {
 	var commands []*cli.Command
 
 	commands = append(commands, &cli.Command{
-		Name:   "show",
-		Usage:  "Информация о доступе",
+		Name:  "validate",
+		Usage: "Check access valid",
+		Flags: []cli.Flag{
+			&cli.BoolFlag{
+				Name:  "allow-all-hosts",
+				Usage: "allow all unknown hosts",
+			},
+			&cli.BoolFlag{
+				Name:    "all",
+				Aliases: []string{"A"},
+				Usage:   "validate all",
+			},
+		},
 		Action: l.action,
 	})
 

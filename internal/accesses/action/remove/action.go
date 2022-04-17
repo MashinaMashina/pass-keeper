@@ -33,7 +33,7 @@ func (l *accessRemove) action(c *cli.Context) error {
 		return err
 	}
 
-	fmt.Fprintln(l.Stdout, "Удалено")
+	fmt.Fprintln(l.Stdout, "Deleted")
 
 	return nil
 }

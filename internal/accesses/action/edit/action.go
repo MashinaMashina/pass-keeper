@@ -22,13 +22,13 @@ func (l *accessEdit) action(c *cli.Context) error {
 		return errors.Wrap(err, "get access from storage")
 	}
 
-	fmt.Fprintln(l.Stdout, "Редактирование "+access.Name())
-	fmt.Fprintln(l.Stdout, "Если не хотите менять строку, пропускайте нажатием Enter")
+	fmt.Fprintln(l.Stdout, "Editing "+access.Name())
+	fmt.Fprintln(l.Stdout, "If you do not want to change the line, skip by pressing Enter")
 
 	var value string
 	var edit []string
 	for {
-		fmt.Fprint(l.Stdout, "Введите имя: ")
+		fmt.Fprint(l.Stdout, "Enter name: ")
 		_, err = fmt.Fscanln(l.Stdin, &value)
 		if err != nil && err.Error() != "unexpected newline" {
 			return errors.Wrap(err, "scan name")
@@ -45,17 +45,17 @@ func (l *accessEdit) action(c *cli.Context) error {
 
 			if len(rows) == 0 {
 				access.SetName(value)
-				edit = append(edit, "имя")
+				edit = append(edit, "name")
 				break
 			} else {
-				fmt.Fprintln(l.Stdout, "Такое имя уже есть, выберите другое")
+				fmt.Fprintln(l.Stdout, "Name is exists, choose another name")
 			}
 		} else {
 			break
 		}
 	}
 
-	fmt.Fprint(l.Stdout, "Введите хост: ")
+	fmt.Fprint(l.Stdout, "Enter hostname: ")
 	value = ""
 	_, err = fmt.Fscanln(l.Stdin, &value)
 	if err != nil && err.Error() != "unexpected newline" {
@@ -63,10 +63,10 @@ func (l *accessEdit) action(c *cli.Context) error {
 	}
 	if value != "" {
 		access.SetHost(value)
-		edit = append(edit, "хост")
+		edit = append(edit, "hostname")
 	}
 
-	fmt.Fprint(l.Stdout, "Введите порт: ")
+	fmt.Fprint(l.Stdout, "Enter port: ")
 
 	value = ""
 	_, err = fmt.Fscanln(l.Stdin, &value)
@@ -79,10 +79,10 @@ func (l *accessEdit) action(c *cli.Context) error {
 			return err
 		}
 		access.SetPort(port)
-		edit = append(edit, "порт")
+		edit = append(edit, "port")
 	}
 
-	fmt.Fprint(l.Stdout, "Введите логин: ")
+	fmt.Fprint(l.Stdout, "Enter login: ")
 	value = ""
 	_, err = fmt.Fscanln(l.Stdin, &value)
 	if err != nil && err.Error() != "unexpected newline" {
@@ -90,10 +90,10 @@ func (l *accessEdit) action(c *cli.Context) error {
 	}
 	if value != "" {
 		access.SetLogin(value)
-		edit = append(edit, "логин")
+		edit = append(edit, "login")
 	}
 
-	fmt.Fprint(l.Stdout, "Введите пароль: ")
+	fmt.Fprint(l.Stdout, "Enter password: ")
 	value = ""
 	_, err = fmt.Fscanln(l.Stdin, &value)
 	if err != nil && err.Error() != "unexpected newline" {
@@ -101,11 +101,11 @@ func (l *accessEdit) action(c *cli.Context) error {
 	}
 	if value != "" {
 		access.SetPassword(value)
-		edit = append(edit, "пароль")
+		edit = append(edit, "password")
 	}
 
 	if len(edit) == 0 {
-		fmt.Fprintln(l.Stdout, "Нечего менять")
+		fmt.Fprintln(l.Stdout, "Nothing to change")
 		return nil
 	}
 
@@ -114,7 +114,7 @@ func (l *accessEdit) action(c *cli.Context) error {
 		return errors.Wrap(err, "update access")
 	}
 
-	fmt.Fprintln(l.Stdout, "Обновлены поля: "+strings.Join(edit, ", "))
+	fmt.Fprintln(l.Stdout, "Updated fields: "+strings.Join(edit, ", "))
 
 	return nil
 }

@@ -20,12 +20,12 @@ func (lp *linkParser) Commands() []*cli.Command {
 
 	commands = append(commands, &cli.Command{
 		Name:  "scan",
-		Usage: "Собирает доступы с putty ярлыков",
+		Usage: "Collects accesses from putty shortcuts",
 		Flags: []cli.Flag{
 			&cli.StringFlag{
 				Name:        "path",
 				Aliases:     []string{"p"},
-				Usage:       "Папка с ярлыками или файл ярлыка",
+				Usage:       "Shortcut folder or shortcut file",
 				Required:    false,
 				Value:       "./",
 				Destination: nil,

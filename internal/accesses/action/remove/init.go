@@ -20,7 +20,7 @@ func (l *accessRemove) Commands() []*cli.Command {
 
 	commands = append(commands, &cli.Command{
 		Name:   "remove",
-		Usage:  "Удаление доступа",
+		Usage:  "Access remove",
 		Action: l.action,
 	})
 

@@ -1,7 +1,6 @@
 package accesstype
 
 import (
-	"fmt"
 	"time"
 )
 
@@ -15,7 +14,6 @@ type access struct {
 	password  string
 	session   string
 	valid     bool
-	validated bool
 	createdAt time.Time
 	updatedAt time.Time
 }
@@ -38,7 +36,7 @@ type Access interface {
 	Session() string
 	SetSession(session string)
 	Valid() bool
-	Validate() error
+	SetValid(valid bool)
 	CreatedAt() time.Time
 	SetCreatedAt(t time.Time)
 	UpdatedAt() time.Time
@@ -116,8 +114,8 @@ func (a *access) Valid() bool {
 	return a.valid
 }
 
-func (a *access) Validate() error {
-	return fmt.Errorf("validator not implemented for type %s", a.typo)
+func (a *access) SetValid(valid bool) {
+	a.valid = valid
 }
 
 func (a *access) CreatedAt() time.Time {

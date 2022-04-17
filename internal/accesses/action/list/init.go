@@ -20,11 +20,12 @@ func (l *accessList) Commands() []*cli.Command {
 
 	commands = append(commands, &cli.Command{
 		Name:  "list",
-		Usage: "Отображает список доступов",
+		Usage: "Access list",
 		Flags: []cli.Flag{
 			&cli.BoolFlag{
 				Name:    "list",
 				Aliases: []string{"l"},
+				Value:   false,
 			},
 		},
 		Action: l.action,

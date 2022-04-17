@@ -20,7 +20,7 @@ func (lp *puttyRun) Commands() []*cli.Command {
 
 	commands = append(commands, &cli.Command{
 		Name:   "run",
-		Usage:  "Запускает putty",
+		Usage:  "Run putty",
 		Action: lp.action,
 	})
 
