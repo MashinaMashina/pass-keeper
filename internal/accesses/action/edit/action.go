@@ -6,6 +6,7 @@ import (
 	"github.com/urfave/cli/v2"
 	"pass-keeper/internal/accesses/storage"
 	"pass-keeper/internal/accesses/storage/params"
+	"pass-keeper/internal/app"
 	"strconv"
 	"strings"
 )
@@ -17,7 +18,7 @@ func (l *accessEdit) action(c *cli.Context) error {
 		parameters = append(parameters, params.NewLike("name", c.Args().First()+"%"))
 	}
 
-	access, err := l.Storage.FindOne(parameters...)
+	access, err := app.FindOne(l.DTO, parameters...)
 	if err != nil {
 		return errors.Wrap(err, "get access from storage")
 	}

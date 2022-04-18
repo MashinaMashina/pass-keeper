@@ -5,6 +5,7 @@ import (
 	"github.com/urfave/cli/v2"
 	"pass-keeper/internal/accesses/storage"
 	"pass-keeper/internal/accesses/storage/params"
+	"pass-keeper/internal/app"
 	"strings"
 )
 
@@ -15,13 +16,13 @@ func (l *accessRemove) action(c *cli.Context) error {
 		parameters = append(parameters, params.NewLike("name", c.Args().First()+"%"))
 	}
 
-	row, err := l.Storage.FindOne(parameters...)
+	row, err := app.FindOne(l.DTO, parameters...)
 	if err != nil {
 		return err
 	}
 
 	var confirm string
-	fmt.Fprint(l.Stdout, fmt.Sprintf("Удалить %s? (Y/n) ", row.Name()))
+	fmt.Fprint(l.Stdout, fmt.Sprintf("Remove %s? (Y/n) ", row.Name()))
 	fmt.Fscanln(l.Stdin, &confirm)
 
 	if strings.ToLower(confirm) != "y" {

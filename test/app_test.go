@@ -45,8 +45,8 @@ func TestAppCRUD(t *testing.T) {
 			fmt.Fprintln(w, access.Password())
 		},
 		Check: func(t *testing.T, dto app.DTO, output string) {
-			if assert.Equalf(t, "Введите имя: Введите хост: Введите порт (по умолчанию 22): "+
-				"Введите логин: Введите пароль: Добавлено", strings.TrimSpace(output), "") {
+			if assert.Equalf(t, "Enter name: Enter hostname: Enter port:  (by default 22): "+
+				"Enter login: Enter password: Success add", strings.TrimSpace(output), "") {
 				rows, err := dto.Storage.List(params.NewEq("name", access.Name()))
 				if err != nil {
 					t.Error(err)
@@ -68,21 +68,22 @@ func TestAppCRUD(t *testing.T) {
 		Check: func(t *testing.T, dto app.DTO, output string) {
 			output = cleanLines(output)
 
-			expect := fmt.Sprintf("Имя %s\n"+
-				"Хост %s\n"+
-				"Порт %d\n"+
-				"Логин %s\n"+
-				"Пароль %s\n"+
-				"Имя сессии\n"+
-				"Валиден Нет\n"+
-				"Добавлен %s\n"+
-				"Изменен %s",
+			expect := fmt.Sprintf("Name %s\n"+
+				"Host %s\n"+
+				"Port %d\n"+
+				"Login %s\n"+
+				"Password %s\n"+
+				"Session name %s\n"+
+				"Valid no\n"+
+				"Added %s\n"+
+				"Updated %s",
 				access.Name(), access.Host(), access.Port(), access.Login(), access.Password(),
+				access.Session(),
 				access.CreatedAt().Format(dateFormat),
 				access.UpdatedAt().Format(dateFormat),
 			)
 
-			assert.Equalf(t, expect, strings.TrimSpace(cleanLines(output)), "")
+			assert.Equalf(t, strings.TrimSpace(cleanLines(expect)), strings.TrimSpace(cleanLines(output)), "")
 		},
 	})
 
@@ -111,8 +112,8 @@ func TestAppCRUD(t *testing.T) {
 			fmt.Fprint(w, "\n\n\n\n\n")
 		},
 		Check: func(t *testing.T, dto app.DTO, output string) {
-			except := fmt.Sprintf("Редактирование %s\nЕсли не хотите менять строку, пропускайте нажатием Enter\n"+
-				"Введите имя: Введите хост: Введите порт: Введите логин: Введите пароль: Нечего менять",
+			except := fmt.Sprintf("Editing %s\nIf you do not want to change the line, skip by pressing Enter\n"+
+				"Enter name: Enter hostname: Enter port: Enter login: Enter password: Nothing to change",
 				access.Name())
 
 			if assert.Equalf(t, except, strings.TrimSpace(output), "") {
@@ -145,9 +146,9 @@ func TestAppCRUD(t *testing.T) {
 			fmt.Fprintln(w, access2.Password())
 		},
 		Check: func(t *testing.T, dto app.DTO, output string) {
-			expect := fmt.Sprintf("Редактирование %s\n"+
-				"Если не хотите менять строку, пропускайте нажатием Enter\n"+
-				"Введите имя: Введите хост: Введите порт: Введите логин: Введите пароль: Обновлены поля: имя, хост, порт, логин, пароль", access.Name())
+			expect := fmt.Sprintf("Editing %s\nIf you do not want to change the line, skip by pressing Enter\n"+
+				"Enter name: Enter hostname: Enter port: Enter login: Enter password: Updated fields: "+
+				"name, hostname, port, login, password", access.Name())
 
 			if assert.Equalf(t, expect, strings.TrimSpace(output), "") {
 				rows, err := dto.Storage.List(params.NewEq("name", access2.Name()))
@@ -173,7 +174,7 @@ func TestAppCRUD(t *testing.T) {
 			fmt.Fprintln(w, "n")
 		},
 		Check: func(t *testing.T, dto app.DTO, output string) {
-			expect := fmt.Sprintf("Удалить %s? (Y/n)", access2.Name())
+			expect := fmt.Sprintf("Remove %s? (Y/n)", access2.Name())
 
 			if assert.Equalf(t, expect, strings.TrimSpace(output), "") {
 				rows, err := dto.Storage.List(params.NewEq("name", access2.Name()))
@@ -194,7 +195,7 @@ func TestAppCRUD(t *testing.T) {
 			fmt.Fprintln(w, "y")
 		},
 		Check: func(t *testing.T, dto app.DTO, output string) {
-			expect := fmt.Sprintf("Удалить %s? (Y/n) Удалено", access2.Name())
+			expect := fmt.Sprintf("Remove %s? (Y/n) Deleted", access2.Name())
 
 			if assert.Equalf(t, expect, strings.TrimSpace(output), "") {
 				rows, err := dto.Storage.List(params.NewEq("name", access2.Name()))

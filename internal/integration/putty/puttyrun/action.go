@@ -9,6 +9,7 @@ import (
 	"pass-keeper/internal/accesses/accesstype"
 	"pass-keeper/internal/accesses/storage"
 	"pass-keeper/internal/accesses/storage/params"
+	app2 "pass-keeper/internal/app"
 	"pass-keeper/pkg/iocustom"
 )
 
@@ -50,7 +51,7 @@ func (lp *puttyRun) action(c *cli.Context) error {
 		parameters = append(parameters, params.NewLike("name", c.Args().First()+"%"))
 	}
 
-	access, err := lp.Storage.FindOne(parameters...)
+	access, err := app2.FindOne(lp.DTO, parameters...)
 	if err != nil {
 		return err
 	}

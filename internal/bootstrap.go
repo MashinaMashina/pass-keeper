@@ -13,7 +13,13 @@ func FillConfig(cfg *config.Config) {
 	cfg.SetVirtual(append(cfg.Virtual(), "main.key"))
 
 	cfg.Set("main.key", key)
-	cfg.Set("main.date_format", "15:04 02/01/06")
+
+	if cfg.String("main.date_format") == "" {
+		cfg.Set("main.date_format", "15:04 02/01/06")
+	}
+	if cfg.String("main.mode") == "" {
+		cfg.Set("main.mode", "simple")
+	}
 }
 
 func ConfigFile() string {

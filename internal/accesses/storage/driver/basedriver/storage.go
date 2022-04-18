@@ -5,15 +5,11 @@ import (
 	"encoding/hex"
 	"fmt"
 	"github.com/Masterminds/squirrel"
-	"github.com/manifoldco/promptui"
 	"github.com/pkg/errors"
-	"io"
-	"os"
 	"pass-keeper/internal/accesses/accesstype"
 	"pass-keeper/internal/accesses/storage"
 	"pass-keeper/internal/accesses/storage/params"
 	"pass-keeper/internal/config"
-	"pass-keeper/pkg/clibell"
 	"pass-keeper/pkg/encrypt"
 	"strconv"
 	"time"
@@ -23,8 +19,6 @@ type BaseDriver struct {
 	Db     *sql.DB
 	Config *config.Config
 	Key    []byte
-	Stdin  io.ReadCloser
-	Stdout io.WriteCloser
 }
 
 func (s *BaseDriver) Add(access accesstype.Access) error {
@@ -203,47 +197,6 @@ func (s *BaseDriver) List(params ...storage.Param) ([]accesstype.Access, error) 
 	}
 
 	return rows, nil
-}
-
-func (s *BaseDriver) FindOne(parameters ...storage.Param) (accesstype.Access, error) {
-	rows, err := s.List(parameters...)
-	if err != nil {
-		return nil, err
-	}
-
-	if len(rows) == 0 {
-		return nil, fmt.Errorf("not found rows")
-	}
-
-	if len(rows) > 1 {
-		names := make([]string, 0, len(rows))
-
-		for _, row := range rows {
-			names = append(names, row.Name())
-		}
-
-		var res string
-
-		promt := promptui.Select{
-			Label:  "Multiple options available",
-			Items:  names,
-			Stdout: clibell.Instance(s.Stdout),
-		}
-
-		// При указании promt.Stdin выбор перестает быть интерактивным
-		if s.Stdin != os.Stdin {
-			promt.Stdin = s.Stdin
-		}
-
-		_, res, err = promt.Run()
-		if err != nil {
-			return nil, err
-		}
-
-		return s.FindOne(append(parameters, params.NewEq("name", res))...)
-	}
-
-	return rows[0], nil
 }
 
 func (s *BaseDriver) decodeRow(rows *sql.Rows) (accesstype.Access, error) {

@@ -8,6 +8,7 @@ import (
 	"pass-keeper/internal/accesses/storage"
 	"pass-keeper/internal/accesses/storage/params"
 	"pass-keeper/internal/accesses/validate"
+	"pass-keeper/internal/app"
 )
 
 func (l *accessValidate) action(c *cli.Context) error {
@@ -20,7 +21,7 @@ func (l *accessValidate) action(c *cli.Context) error {
 	var rows []accesstype.Access
 
 	if !c.Bool("all") {
-		row, err := l.Storage.FindOne(parameters...)
+		row, err := app.FindOne(l.DTO, parameters...)
 		if err != nil {
 			return err
 		}

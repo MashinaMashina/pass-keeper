@@ -35,7 +35,7 @@ func RunApp() error {
 
 	internal.FillConfig(dto.Config)
 
-	storage, err := sqlite.New(dto.Config, dto.Stdin, dto.Stdout)
+	storage, err := sqlite.New(dto.Config)
 	if err != nil {
 		return errors.Wrap(err, "init storage")
 	}

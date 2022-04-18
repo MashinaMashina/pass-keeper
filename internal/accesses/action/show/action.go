@@ -6,16 +6,17 @@ import (
 	"pass-keeper/internal/accesses/accesstype"
 	"pass-keeper/internal/accesses/storage"
 	"pass-keeper/internal/accesses/storage/params"
+	"pass-keeper/internal/app"
 )
 
 func (l *accessShow) action(c *cli.Context) error {
-	var likeParam storage.Param
+	var parameters []storage.Param
 
 	if c.Args().First() != "" {
-		likeParam = params.NewLike("name", c.Args().First()+"%")
+		parameters = append(parameters, params.NewLike("name", c.Args().First()+"%"))
 	}
 
-	row, err := l.Storage.FindOne(likeParam)
+	row, err := app.FindOne(l.DTO, parameters...)
 	if err != nil {
 		return err
 	}
@@ -29,9 +30,9 @@ func (l *accessShow) show(row accesstype.Access) error {
 	tbl.WithWriter(l.Stdout)
 	tbl.WithPadding(1)
 
-	isValid := "Нет"
+	isValid := "no"
 	if row.Valid() {
-		isValid = "Да"
+		isValid = "yes"
 	}
 
 	tbl.AddRow("Name", row.Name())

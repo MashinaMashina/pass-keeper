@@ -2,12 +2,12 @@ package accessadd
 
 import (
 	"fmt"
-	"github.com/manifoldco/promptui"
 	"github.com/pkg/errors"
 	"github.com/urfave/cli/v2"
 	"pass-keeper/internal/accesses/accesstype"
 	"pass-keeper/internal/accesses/storage/params"
 	"pass-keeper/pkg/clibell"
+	"pass-keeper/pkg/cliselect"
 	"strconv"
 	"time"
 )
@@ -18,10 +18,15 @@ func (l *accessAdd) action(c *cli.Context) error {
 	var access accesstype.Access
 
 	if value = c.String("type"); value == "" {
-		promt := promptui.Select{
+		promt := cliselect.Select{
 			Label:  "Choose type",
 			Items:  []string{"ssh"},
 			Stdout: clibell.Instance(l.Stdout),
+			Mode:   cliselect.ModeSimple,
+		}
+
+		if l.DTO.Config.String("main.mode") == "interactive" {
+			promt.Mode = cliselect.ModeInteractive
 		}
 
 		_, value, err = promt.Run()
@@ -29,8 +34,10 @@ func (l *accessAdd) action(c *cli.Context) error {
 			return err
 		}
 
-		// Без этого фикса promptui.Select съедает часть следующего вывода
-		time.Sleep(time.Millisecond)
+		if l.DTO.Config.String("main.mode") == "interactive" {
+			// Без этого фикса promptui.Select съедает часть следующего вывода
+			time.Sleep(time.Millisecond)
+		}
 	}
 
 	switch value {
@@ -41,7 +48,7 @@ func (l *accessAdd) action(c *cli.Context) error {
 	}
 
 	for {
-		fmt.Fprint(l.Stdout, "Введите имя: ")
+		fmt.Fprint(l.Stdout, "Enter name: ")
 		_, err = fmt.Fscanln(l.Stdin, &value)
 		if err != nil {
 			return err

@@ -62,7 +62,7 @@ func testingDTO() (app.DTO, error) {
 
 	dto.Config = cfg
 
-	s, err := sqlite.New(cfg, dto.Stdin, dto.Stdout)
+	s, err := sqlite.New(cfg)
 	if err != nil {
 		return dto, errors.Wrap(err, "init storage")
 	}

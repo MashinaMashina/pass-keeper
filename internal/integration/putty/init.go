@@ -23,7 +23,7 @@ func (p *putty) Commands() []*cli.Command {
 	return []*cli.Command{
 		{
 			Name:        "putty",
-			Usage:       "Putty интеграция",
+			Usage:       "Putty integration",
 			Subcommands: commands,
 		},
 	}
