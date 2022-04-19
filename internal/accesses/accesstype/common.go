@@ -4,18 +4,46 @@ import (
 	"time"
 )
 
-type access struct {
-	id        int
-	typo      string
-	name      string
-	host      string
-	port      int
-	login     string
-	password  string
-	session   string
-	valid     bool
-	createdAt time.Time
-	updatedAt time.Time
+type Params interface {
+	Fill(map[string]string)
+	Value(string) string
+	Exists(string) bool
+	Set(string, string)
+	All() map[string]string
+}
+
+type params struct {
+	values map[string]string
+}
+
+func NewParams() Params {
+	return &params{
+		values: make(map[string]string),
+	}
+}
+
+func (p *params) Fill(v map[string]string) {
+	p.values = v
+}
+
+func (p *params) Value(k string) string {
+	val, _ := p.values[k]
+
+	return val
+}
+
+func (p *params) Exists(k string) bool {
+	_, exists := p.values[k]
+
+	return exists
+}
+
+func (p *params) Set(k string, v string) {
+	p.values[k] = v
+}
+
+func (p *params) All() map[string]string {
+	return p.values
 }
 
 type Access interface {
@@ -41,10 +69,26 @@ type Access interface {
 	SetCreatedAt(t time.Time)
 	UpdatedAt() time.Time
 	SetUpdatedAt(t time.Time)
+	Params() Params
 }
 
-func New() Access {
-	return &access{typo: "unknown"}
+type access struct {
+	id        int
+	typo      string
+	name      string
+	host      string
+	port      int
+	login     string
+	password  string
+	session   string
+	valid     bool
+	createdAt time.Time
+	updatedAt time.Time
+	params    Params
+}
+
+func new() access {
+	return access{params: NewParams()}
 }
 
 func (a *access) ID() int {
@@ -131,4 +175,8 @@ func (a *access) UpdatedAt() time.Time {
 
 func (a *access) SetUpdatedAt(t time.Time) {
 	a.createdAt = t
+}
+
+func (a *access) Params() Params {
+	return a.params
 }

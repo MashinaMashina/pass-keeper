@@ -12,7 +12,7 @@ import (
 	"strings"
 )
 
-func ValidateSSH(access accesstype.Access, verifyUnknownHosts bool, w io.Writer, r io.Reader) (bool, error) {
+func SSH(access accesstype.Access, verifyUnknownHosts bool, w io.Writer, r io.Reader) (bool, error) {
 	var auth goph.Auth
 
 	if access.Password() != "" {

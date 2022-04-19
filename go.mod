@@ -7,6 +7,7 @@ require (
 	github.com/Masterminds/squirrel v1.5.2
 	github.com/chzyer/readline v0.0.0-20180603132655-2972be24d48e
 	github.com/denisbrodbeck/machineid v1.0.1
+	github.com/jlaffaye/ftp v0.0.0-20220310202011-d2c44e311e78
 	github.com/manifoldco/promptui v0.9.0
 	github.com/mattn/go-sqlite3 v1.14.12
 	github.com/melbahja/goph v1.3.0
@@ -22,6 +23,8 @@ require (
 require (
 	github.com/cpuguy83/go-md2man/v2 v2.0.1 // indirect
 	github.com/davecgh/go-spew v1.1.1 // indirect
+	github.com/hashicorp/errwrap v1.0.0 // indirect
+	github.com/hashicorp/go-multierror v1.1.1 // indirect
 	github.com/kr/fs v0.1.0 // indirect
 	github.com/lann/builder v0.0.0-20180802200727-47ae307949d0 // indirect
 	github.com/lann/ps v0.0.0-20150810152359-62de8c46ede0 // indirect

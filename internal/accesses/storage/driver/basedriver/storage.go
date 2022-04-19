@@ -3,6 +3,7 @@ package basedriver
 import (
 	"database/sql"
 	"encoding/hex"
+	"encoding/json"
 	"fmt"
 	"github.com/Masterminds/squirrel"
 	"github.com/pkg/errors"
@@ -27,8 +28,8 @@ func (s *BaseDriver) Add(access accesstype.Access) error {
 	}
 
 	stmt, err := s.Db.Prepare("INSERT INTO accesses" +
-		"(type, name, host, port, login, password, session, valid, created_at, updated_at)" +
-		"VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?, ?)")
+		"(type, name, host, port, login, password, session, valid, created_at, updated_at, params)" +
+		"VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)")
 
 	if err != nil {
 		return errors.Wrap(err, "prepare add access")
@@ -45,8 +46,13 @@ func (s *BaseDriver) Add(access accesstype.Access) error {
 
 	now := time.Now()
 
+	params, err := json.Marshal(access.Params().All())
+	if err != nil {
+		return err
+	}
+
 	res, err := stmt.Exec(access.Type(), access.Name(), access.Host(), access.Port(),
-		login, password, access.Session(), access.Valid(), now.Unix(), now.Unix())
+		login, password, access.Session(), access.Valid(), now.Unix(), now.Unix(), string(params))
 
 	if err != nil {
 		return err
@@ -75,7 +81,7 @@ func (s *BaseDriver) Update(access accesstype.Access) error {
 	}
 
 	stmt, err := s.Db.Prepare("UPDATE accesses SET " +
-		"type=?, name=?, host=?, port=?, login=?, password=?, session=?, valid=?, updated_at=?" +
+		"type=?, name=?, host=?, port=?, login=?, password=?, session=?, valid=?, updated_at=?, params=?" +
 		"WHERE id=?")
 
 	if err != nil {
@@ -93,8 +99,13 @@ func (s *BaseDriver) Update(access accesstype.Access) error {
 
 	now := time.Now()
 
+	params, err := json.Marshal(access.Params().All())
+	if err != nil {
+		return err
+	}
+
 	_, err = stmt.Exec(access.Type(), access.Name(), access.Host(), access.Port(),
-		login, password, access.Session(), access.Valid(), now.Unix(), access.ID())
+		login, password, access.Session(), access.Valid(), now.Unix(), string(params), access.ID())
 
 	if err != nil {
 		return err
@@ -155,7 +166,8 @@ func (s *BaseDriver) FindExists(access accesstype.Access) (accesstype.Access, er
 
 func (s *BaseDriver) List(params ...storage.Param) ([]accesstype.Access, error) {
 	query := squirrel.
-		Select("id", "type", "name", "host", "login", "port", "password", "session", "valid", "created_at", "updated_at").
+		Select("id", "type", "name", "host", "login", "port", "password",
+			"session", "valid", "created_at", "updated_at", "params").
 		From("accesses")
 
 	for _, param := range params {
@@ -200,29 +212,32 @@ func (s *BaseDriver) List(params ...storage.Param) ([]accesstype.Access, error) 
 }
 
 func (s *BaseDriver) decodeRow(rows *sql.Rows) (accesstype.Access, error) {
-	var id int
-	var typo string
-	var name string
-	var host string
-	var login string
-	var port int
-	var password string
-	var session string
-	var valid bool
-	var access accesstype.Access
-	var err error
-	var createdAt int64
-	var updatedAt int64
+	var (
+		id         int
+		typo       string
+		name       string
+		host       string
+		login      string
+		port       int
+		password   string
+		session    string
+		valid      bool
+		access     accesstype.Access
+		err        error
+		createdAt  int64
+		updatedAt  int64
+		parameters string
+	)
 
-	if err = rows.Scan(&id, &typo, &name, &host, &login, &port, &password, &session, &valid, &createdAt, &updatedAt); err != nil {
+	if err = rows.Scan(&id, &typo, &name, &host, &login, &port, &password,
+		&session, &valid, &createdAt, &updatedAt, &parameters); err != nil {
 		return nil, errors.Wrap(err, "scanning storage data to variables")
 	}
 
-	switch typo {
-	case "ssh":
-		access = accesstype.NewSSH()
-	default:
-		return nil, fmt.Errorf("unknown access type: " + typo)
+	if val, exists := accesstype.Types[typo]; exists {
+		access = val()
+	} else {
+		return nil, errors.New(fmt.Sprintf("invalid type %s", typo))
 	}
 
 	login, err = s.decode(login)
@@ -234,6 +249,14 @@ func (s *BaseDriver) decodeRow(rows *sql.Rows) (accesstype.Access, error) {
 	if err != nil {
 		return nil, errors.Wrap(err, "password decoding")
 	}
+
+	var p map[string]string
+	err = json.Unmarshal([]byte(parameters), &p)
+	if err != nil {
+		return nil, err
+	}
+
+	access.Params().Fill(p)
 
 	access.SetID(id)
 	access.SetHost(host)

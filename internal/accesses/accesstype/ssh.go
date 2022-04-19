@@ -5,5 +5,9 @@ type ssh struct {
 }
 
 func NewSSH() Access {
-	return &ssh{access{typo: "ssh", port: 22}}
+	a := new()
+	a.SetType("ssh")
+	a.SetPort(22)
+
+	return &ssh{a}
 }

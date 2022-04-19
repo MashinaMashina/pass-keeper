@@ -20,6 +20,7 @@ func TestStorageCRUD(t *testing.T) {
 	access.SetLogin("user")
 	access.SetPassword("qwerty123")
 	access.SetSession("some sess")
+	access.Params().Set("key", "some value")
 
 	if access.ID() != 0 {
 		t.Error("invalid id of new record:", access.ID())

@@ -19,8 +19,14 @@ func (l *accessEdit) Commands() []*cli.Command {
 	var commands []*cli.Command
 
 	commands = append(commands, &cli.Command{
-		Name:   "edit",
-		Usage:  "Edit access",
+		Name:  "edit",
+		Usage: "Edit access",
+		Flags: []cli.Flag{
+			&cli.BoolFlag{
+				Name:  "mask",
+				Usage: "Search by mask. Example: %site.ru%",
+			},
+		},
 		Action: l.action,
 	})
 

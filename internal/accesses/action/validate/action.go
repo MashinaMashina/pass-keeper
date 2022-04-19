@@ -1,7 +1,6 @@
 package accessvalidate
 
 import (
-	"errors"
 	"fmt"
 	"github.com/urfave/cli/v2"
 	"pass-keeper/internal/accesses/accesstype"
@@ -48,7 +47,7 @@ func (l *accessValidate) action(c *cli.Context) error {
 	return nil
 }
 
-func (l *accessValidate) validateRow(access accesstype.Access, verifyUnknownHosts bool) error {
+func (l *accessValidate) validateRow(access accesstype.Access, verifyUnknownHosts bool) {
 	fmt.Fprint(l.Stdout, "Checking ", access.Name(), ": ")
 
 	var (
@@ -56,11 +55,11 @@ func (l *accessValidate) validateRow(access accesstype.Access, verifyUnknownHost
 		err   error
 	)
 
-	switch access.Type() {
-	case "ssh":
-		valid, err = validate.ValidateSSH(access, verifyUnknownHosts, l.Stdout, l.Stdin)
-	default:
-		return errors.New("not found validator")
+	if val, exists := validate.Validators[access.Type()]; exists {
+		valid, err = val(access, verifyUnknownHosts, l.Stdout, l.Stdin)
+	} else {
+		fmt.Fprintln(l.Stdout, "not found validator for type", access.Type())
+		return
 	}
 
 	if valid {
@@ -71,6 +70,7 @@ func (l *accessValidate) validateRow(access accesstype.Access, verifyUnknownHost
 
 	if err != nil {
 		fmt.Fprintln(l.Stdout, "Error:", err)
+		return
 	}
 
 	if access.Valid() != valid {
@@ -78,5 +78,5 @@ func (l *accessValidate) validateRow(access accesstype.Access, verifyUnknownHost
 		l.Storage.Save(access)
 	}
 
-	return nil
+	return
 }

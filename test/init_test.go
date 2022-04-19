@@ -14,6 +14,7 @@ import (
 	"pass-keeper/internal/app"
 	"pass-keeper/internal/config"
 	"path"
+	"reflect"
 	"regexp"
 	"runtime"
 	"strings"
@@ -192,7 +193,12 @@ func equalAccess(t *testing.T, expect, real accesstype.Access) bool {
 		expect.Password() != real.Password() ||
 		expect.Session() != real.Session() ||
 		expect.Valid() != real.Valid() {
-		t.Error(fmt.Sprintf("accesses not equal\nexpected: %+v,\nbut real %+v", expect, real))
+		t.Error(fmt.Sprintf("accesses not equal\nexpected: %+v,\nbut real: %+v", expect, real))
+		return false
+	}
+
+	if !reflect.DeepEqual(expect.Params().All(), real.Params().All()) {
+		t.Error(fmt.Sprintf("access params not equal\nexpected: %+v,\nbut real: %+v", expect.Params().All(), real.Params().All()))
 
 		return false
 	}

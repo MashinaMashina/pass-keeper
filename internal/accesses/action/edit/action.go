@@ -15,7 +15,11 @@ func (l *accessEdit) action(c *cli.Context) error {
 	var parameters []storage.Param
 
 	if c.Args().First() != "" {
-		parameters = append(parameters, params.NewLike("name", c.Args().First()+"%"))
+		if c.Bool("mask") {
+			parameters = append(parameters, params.NewLike("name", c.Args().First()))
+		} else {
+			parameters = append(parameters, params.NewLike("name", c.Args().First()+"%"))
+		}
 	}
 
 	access, err := app.FindOne(l.DTO, parameters...)

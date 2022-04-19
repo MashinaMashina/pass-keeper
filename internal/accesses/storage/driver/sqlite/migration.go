@@ -16,7 +16,8 @@ func (s *sqlite) migration() error {
 		"session TEXT NULL," +
 		"valid INT DEFAULT 0," +
 		"created_at TEXT NULL," +
-		"updated_at TEXT NULL" +
+		"updated_at TEXT NULL," +
+		"params TEXT DEFAULT \"{}\"" +
 		")")
 	if err != nil {
 		return errors.Wrap(err, "Migration of tables")

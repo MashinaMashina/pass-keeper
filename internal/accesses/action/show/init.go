@@ -22,6 +22,12 @@ func (l *accessShow) Commands() []*cli.Command {
 		Name:   "show",
 		Usage:  "Access info",
 		Action: l.action,
+		Flags: []cli.Flag{
+			&cli.BoolFlag{
+				Name:  "mask",
+				Usage: "Search by mask. Example: %site.ru%",
+			},
+		},
 	})
 
 	return commands

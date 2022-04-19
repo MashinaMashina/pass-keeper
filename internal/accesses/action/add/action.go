@@ -18,9 +18,17 @@ func (l *accessAdd) action(c *cli.Context) error {
 	var access accesstype.Access
 
 	if value = c.String("type"); value == "" {
+		names := make([]string, len(accesstype.Types))
+
+		i := 0
+		for k := range accesstype.Types {
+			names[i] = k
+			i++
+		}
+
 		promt := cliselect.Select{
 			Label:  "Choose type",
-			Items:  []string{"ssh"},
+			Items:  names,
 			Stdout: clibell.Instance(l.Stdout),
 			Mode:   cliselect.ModeSimple,
 		}
@@ -40,10 +48,9 @@ func (l *accessAdd) action(c *cli.Context) error {
 		}
 	}
 
-	switch value {
-	case "ssh":
-		access = accesstype.NewSSH()
-	default:
+	if val, exists := accesstype.Types[value]; exists {
+		access = val()
+	} else {
 		return errors.New(fmt.Sprintf("invalid type %s", value))
 	}
 
