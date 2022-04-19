@@ -19,8 +19,19 @@ func (l *accessRemove) Commands() []*cli.Command {
 	var commands []*cli.Command
 
 	commands = append(commands, &cli.Command{
-		Name:   "remove",
-		Usage:  "Access remove",
+		Name:  "remove",
+		Usage: "Access remove",
+		Flags: []cli.Flag{
+			&cli.BoolFlag{
+				Name:  "mask",
+				Usage: "Search by mask. Example: %site.ru%",
+			},
+			&cli.BoolFlag{
+				Name:    "all",
+				Aliases: []string{"A"},
+				Usage:   "validate all",
+			},
+		},
 		Action: l.action,
 	})
 

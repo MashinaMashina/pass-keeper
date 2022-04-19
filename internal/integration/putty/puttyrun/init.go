@@ -22,6 +22,12 @@ func (lp *puttyRun) Commands() []*cli.Command {
 		Name:   "run",
 		Usage:  "Run putty",
 		Action: lp.action,
+		Flags: []cli.Flag{
+			&cli.BoolFlag{
+				Name:  "mask",
+				Usage: "Search by mask. Example: %site.ru%",
+			},
+		},
 	})
 
 	return commands

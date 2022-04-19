@@ -31,6 +31,10 @@ func (l *accessValidate) Commands() []*cli.Command {
 				Aliases: []string{"A"},
 				Usage:   "validate all",
 			},
+			&cli.BoolFlag{
+				Name:  "mask",
+				Usage: "Search by mask. Example: %site.ru%",
+			},
 		},
 		Action: l.action,
 	})

@@ -48,7 +48,11 @@ func (lp *puttyRun) action(c *cli.Context) error {
 	parameters = append(parameters, params.NewEq("type", "ssh"))
 
 	if c.Args().First() != "" {
-		parameters = append(parameters, params.NewLike("name", c.Args().First()+"%"))
+		if c.Bool("mask") {
+			parameters = append(parameters, params.NewLike("name", c.Args().First()))
+		} else {
+			parameters = append(parameters, params.NewLike("name", c.Args().First()+"%"))
+		}
 	}
 
 	access, err := app2.FindOne(lp.DTO, parameters...)
