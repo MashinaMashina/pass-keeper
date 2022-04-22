@@ -58,10 +58,10 @@ func (lp *linkParser) accessByArguments(args, name string) (accesstype.Access, e
 	sshAccess.SetLogin(ssh.User.Username())
 
 	if *sess != "" {
-		sshAccess.SetSession(*sess)
+		sshAccess.Params().Set("session_name", *sess)
 	}
 
-	if sshAccess.Host() == "" && sshAccess.Session() == "" {
+	if sshAccess.Host() == "" && sshAccess.Params().Value("session_name") == "" {
 		return nil, ErrEmptyLink
 	}
 

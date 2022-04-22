@@ -35,8 +35,8 @@ func TestParseArgs(t *testing.T) {
 	}
 
 	equalAccess(t, access, resAccess)
-	
-	access.SetSession("session name")
+
+	access.Params().Set("session_name", "session name")
 
 	resAccess, err = p.accessByArguments(`-ssh root@sub.domain.net -P 1010 -pw aas@sdd$%^ --load "session name"`, name)
 	if err != nil {
@@ -53,7 +53,8 @@ func equalAccess(t *testing.T, expect, real accesstype.Access) bool {
 		expect.Port() != real.Port() ||
 		expect.Login() != real.Login() ||
 		expect.Password() != real.Password() ||
-		expect.Session() != real.Session() {
+		expect.Group() != real.Group() ||
+		expect.Params().Value("session_name") != real.Params().Value("session_name") {
 		t.Error(fmt.Sprintf("accesses not equal\nexpected: %+v,\nbut real %+v", expect, real))
 
 		return false

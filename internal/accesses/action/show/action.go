@@ -44,7 +44,7 @@ func (l *accessShow) show(row accesstype.Access) error {
 	tbl.AddRow("Port", row.Port())
 	tbl.AddRow("Login", row.Login())
 	tbl.AddRow("Password", row.Password())
-	tbl.AddRow("Session name", row.Session())
+	tbl.AddRow("Group", row.Group())
 	tbl.AddRow("Valid", isValid)
 	tbl.AddRow("Added", row.CreatedAt().Format(l.Config.String("main.date_format")))
 	tbl.AddRow("Updated", row.UpdatedAt().Format(l.Config.String("main.date_format")))

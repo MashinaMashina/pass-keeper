@@ -24,7 +24,7 @@ func TestPuttyParselnk(t *testing.T) {
 	access2 := accesstype.NewSSH()
 	access2.SetName("site2.ru")
 	access2.SetHost("127.0.0.1")
-	access2.SetSession("sess name")
+	access2.Params().Set("session_name", "sess name")
 
 	cases = append(cases, appTestCase{
 		Args:    []string{"putty", "scan", "-p", testdata + "/putty-lnk/folder"},

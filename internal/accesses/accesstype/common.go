@@ -61,8 +61,8 @@ type Access interface {
 	SetLogin(login string)
 	Password() string
 	SetPassword(password string)
-	Session() string
-	SetSession(session string)
+	Group() string
+	SetGroup(group string)
 	Valid() bool
 	SetValid(valid bool)
 	CreatedAt() time.Time
@@ -80,7 +80,7 @@ type access struct {
 	port      int
 	login     string
 	password  string
-	session   string
+	group     string
 	valid     bool
 	createdAt time.Time
 	updatedAt time.Time
@@ -146,12 +146,12 @@ func (a *access) SetPassword(password string) {
 	a.password = password
 }
 
-func (a *access) Session() string {
-	return a.session
+func (a *access) Group() string {
+	return a.group
 }
 
-func (a *access) SetSession(session string) {
-	a.session = session
+func (a *access) SetGroup(group string) {
+	a.group = group
 }
 
 func (a *access) Valid() bool {

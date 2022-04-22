@@ -21,7 +21,7 @@ func TestArgs(t *testing.T) {
 
 	assert.Equal(t, []string{"-ssh", "login@host1.com", "-P", "8000", "-pw", "qwerty"}, p.argsFromAccess(access))
 
-	access.SetSession("sess name")
+	access.Params().Set("session_name", "sess name")
 
 	assert.Equal(t, []string{"-ssh", "login@host1.com", "-P", "8000", "-pw", "qwerty", "--load", "sess name"}, p.argsFromAccess(access))
 }

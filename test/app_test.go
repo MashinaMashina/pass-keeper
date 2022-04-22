@@ -73,12 +73,11 @@ func TestAppCRUD(t *testing.T) {
 				"Port %d\n"+
 				"Login %s\n"+
 				"Password %s\n"+
-				"Session name %s\n"+
+				"Group %s\n"+
 				"Valid no\n"+
 				"Added %s\n"+
 				"Updated %s",
-				access.Name(), access.Host(), access.Port(), access.Login(), access.Password(),
-				access.Session(),
+				access.Name(), access.Host(), access.Port(), access.Login(), access.Password(), access.Group(),
 				access.CreatedAt().Format(dateFormat),
 				access.UpdatedAt().Format(dateFormat),
 			)

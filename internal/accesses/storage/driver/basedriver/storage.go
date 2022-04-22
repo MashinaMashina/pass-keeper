@@ -28,7 +28,7 @@ func (s *BaseDriver) Add(access accesstype.Access) error {
 	}
 
 	stmt, err := s.Db.Prepare("INSERT INTO accesses" +
-		"(type, name, host, port, login, password, session, valid, created_at, updated_at, params)" +
+		"(`type`, `name`, `host`, `port`, `login`, `password`, `group`, `valid`, `created_at`, `updated_at`, `params`)" +
 		"VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)")
 
 	if err != nil {
@@ -52,7 +52,7 @@ func (s *BaseDriver) Add(access accesstype.Access) error {
 	}
 
 	res, err := stmt.Exec(access.Type(), access.Name(), access.Host(), access.Port(),
-		login, password, access.Session(), access.Valid(), now.Unix(), now.Unix(), string(params))
+		login, password, access.Group(), access.Valid(), now.Unix(), now.Unix(), string(params))
 
 	if err != nil {
 		return err
@@ -81,7 +81,8 @@ func (s *BaseDriver) Update(access accesstype.Access) error {
 	}
 
 	stmt, err := s.Db.Prepare("UPDATE accesses SET " +
-		"type=?, name=?, host=?, port=?, login=?, password=?, session=?, valid=?, updated_at=?, params=?" +
+		"`type`=?, `name`=?, `host`=?, `port`=?, `login`=?, `password`=?," +
+		"`group`=?, `valid`=?, `updated_at`=?, `params`=?" +
 		"WHERE id=?")
 
 	if err != nil {
@@ -105,7 +106,7 @@ func (s *BaseDriver) Update(access accesstype.Access) error {
 	}
 
 	_, err = stmt.Exec(access.Type(), access.Name(), access.Host(), access.Port(),
-		login, password, access.Session(), access.Valid(), now.Unix(), string(params), access.ID())
+		login, password, access.Group(), access.Valid(), now.Unix(), string(params), access.ID())
 
 	if err != nil {
 		return err
@@ -167,7 +168,7 @@ func (s *BaseDriver) FindExists(access accesstype.Access) (accesstype.Access, er
 func (s *BaseDriver) List(params ...storage.Param) ([]accesstype.Access, error) {
 	query := squirrel.
 		Select("id", "type", "name", "host", "login", "port", "password",
-			"session", "valid", "created_at", "updated_at", "params").
+			"`group`", "valid", "created_at", "updated_at", "params").
 		From("accesses")
 
 	for _, param := range params {
@@ -220,7 +221,7 @@ func (s *BaseDriver) decodeRow(rows *sql.Rows) (accesstype.Access, error) {
 		login      string
 		port       int
 		password   string
-		session    string
+		group      string
 		valid      bool
 		access     accesstype.Access
 		err        error
@@ -230,7 +231,7 @@ func (s *BaseDriver) decodeRow(rows *sql.Rows) (accesstype.Access, error) {
 	)
 
 	if err = rows.Scan(&id, &typo, &name, &host, &login, &port, &password,
-		&session, &valid, &createdAt, &updatedAt, &parameters); err != nil {
+		&group, &valid, &createdAt, &updatedAt, &parameters); err != nil {
 		return nil, errors.Wrap(err, "scanning storage data to variables")
 	}
 
@@ -264,7 +265,7 @@ func (s *BaseDriver) decodeRow(rows *sql.Rows) (accesstype.Access, error) {
 	access.SetLogin(login)
 	access.SetPort(port)
 	access.SetPassword(password)
-	access.SetSession(session)
+	access.SetGroup(group)
 	access.SetValid(valid)
 	access.SetCreatedAt(time.Unix(createdAt, 0))
 	access.SetUpdatedAt(time.Unix(updatedAt, 0))

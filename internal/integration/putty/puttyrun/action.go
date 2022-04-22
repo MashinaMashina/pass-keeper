@@ -89,8 +89,8 @@ func (lp *puttyRun) argsFromAccess(access accesstype.Access) (args []string) {
 		args = append(args, "-pw", access.Password())
 	}
 
-	if access.Session() != "" {
-		args = append(args, "--load", access.Session())
+	if access.Params().Exists("session_name") {
+		args = append(args, "--load", access.Params().Value("session_name"))
 	}
 
 	return

@@ -19,7 +19,7 @@ func TestStorageCRUD(t *testing.T) {
 	access.SetHost("host.com")
 	access.SetLogin("user")
 	access.SetPassword("qwerty123")
-	access.SetSession("some sess")
+	access.SetGroup("some group")
 	access.Params().Set("key", "some value")
 
 	if access.ID() != 0 {
