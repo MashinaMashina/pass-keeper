@@ -24,10 +24,10 @@ func (lp *linkParser) sshAccessByLnkFile(file filesystem.File) (accesstype.Acces
 	name := strings.TrimSuffix(file.Name(), ".lnk")
 	name = lp.cleanFilename(name)
 
-	return lp.accessByArguments(lnk.StringData.CommandLineArguments, name)
+	return lp.accessByArguments(lnk.StringData.CommandLineArguments, name, file.Dir())
 }
 
-func (lp *linkParser) accessByArguments(args, name string) (accesstype.Access, error) {
+func (lp *linkParser) accessByArguments(args, name, group string) (accesstype.Access, error) {
 	flagSet := flag.NewFlagSet("", flag.ContinueOnError)
 
 	sshUri := flagSet.String("ssh", "", "SSH")
@@ -56,6 +56,7 @@ func (lp *linkParser) accessByArguments(args, name string) (accesstype.Access, e
 	sshAccess.SetHost(ssh.Host)
 	sshAccess.SetPort(*port)
 	sshAccess.SetLogin(ssh.User.Username())
+	sshAccess.SetGroup(group)
 
 	if *sess != "" {
 		sshAccess.Params().Set("session_name", *sess)

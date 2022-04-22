@@ -8,6 +8,7 @@ import (
 
 func TestParseArgs(t *testing.T) {
 	name := "name"
+	group := "any/group"
 
 	access := accesstype.NewSSH()
 	access.SetName(name)
@@ -17,8 +18,9 @@ func TestParseArgs(t *testing.T) {
 	access.SetLogin("root")
 	access.SetHost("sub.domain.net")
 	access.SetPassword("aas@sdd$%^")
+	access.SetGroup("any/group")
 
-	resAccess, err := p.accessByArguments("-ssh root@sub.domain.net -pw aas@sdd$%^", name)
+	resAccess, err := p.accessByArguments("-ssh root@sub.domain.net -pw aas@sdd$%^", name, group)
 	if err != nil {
 		t.Error(err)
 		return
@@ -28,7 +30,7 @@ func TestParseArgs(t *testing.T) {
 
 	access.SetPort(1010)
 
-	resAccess, err = p.accessByArguments("-ssh root@sub.domain.net -P 1010 -pw aas@sdd$%^", name)
+	resAccess, err = p.accessByArguments("-ssh root@sub.domain.net -P 1010 -pw aas@sdd$%^", name, group)
 	if err != nil {
 		t.Error(err)
 		return
@@ -38,7 +40,7 @@ func TestParseArgs(t *testing.T) {
 
 	access.Params().Set("session_name", "session name")
 
-	resAccess, err = p.accessByArguments(`-ssh root@sub.domain.net -P 1010 -pw aas@sdd$%^ --load "session name"`, name)
+	resAccess, err = p.accessByArguments(`-ssh root@sub.domain.net -P 1010 -pw aas@sdd$%^ --load "session name"`, name, group)
 	if err != nil {
 		t.Error(err)
 		return

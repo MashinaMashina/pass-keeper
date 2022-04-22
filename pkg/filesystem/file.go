@@ -10,6 +10,7 @@ import (
 type File interface {
 	Name() string
 	FullPath() string
+	Dir() string
 	Size() int64
 	Mode() fs.FileMode
 	ModTime() time.Time
@@ -39,4 +40,8 @@ func NewFileFromPath(path string) (File, error) {
 
 func (f file) FullPath() string {
 	return f.dir + string(os.PathSeparator) + f.Name()
+}
+
+func (f file) Dir() string {
+	return f.dir
 }
