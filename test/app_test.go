@@ -12,7 +12,7 @@ import (
 )
 
 func TestAppCRUD(t *testing.T) {
-	var cases []appTestCase
+	cases := make([]appTestCase, 0, 32)
 
 	access := accesstype.NewSSH()
 	access.SetName("some1")

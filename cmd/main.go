@@ -49,15 +49,13 @@ func RunApp() error {
 	}
 
 	application := &cli.App{
-		Commands: []*cli.Command{},
+		Commands: commands,
 		Reader:   dto.Stdin,
 		Writer:   dto.Stdout,
 	}
 
 	application.EnableBashCompletion = true
 	application.UseShortOptionHandling = true
-
-	application.Commands = append(application.Commands, commands...)
 
 	err = application.Run(os.Args)
 	if err != nil {

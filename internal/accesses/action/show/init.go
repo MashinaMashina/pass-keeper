@@ -16,19 +16,17 @@ func New(dto app.DTO) *accessShow {
 }
 
 func (l *accessShow) Commands() []*cli.Command {
-	var commands []*cli.Command
-
-	commands = append(commands, &cli.Command{
-		Name:   "show",
-		Usage:  "Access info",
-		Action: l.action,
-		Flags: []cli.Flag{
-			&cli.BoolFlag{
-				Name:  "mask",
-				Usage: "Search by mask. Example: %site.ru%",
+	return []*cli.Command{
+		{
+			Name:   "show",
+			Usage:  "Access info",
+			Action: l.action,
+			Flags: []cli.Flag{
+				&cli.BoolFlag{
+					Name:  "mask",
+					Usage: "Search by mask. Example: %site.ru%",
+				},
 			},
 		},
-	})
-
-	return commands
+	}
 }

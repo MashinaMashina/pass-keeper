@@ -11,7 +11,7 @@ import (
 )
 
 func TestPuttyParselnk(t *testing.T) {
-	var cases []appTestCase
+	cases := make([]appTestCase, 0, 2)
 
 	testdata := FolderTest()
 

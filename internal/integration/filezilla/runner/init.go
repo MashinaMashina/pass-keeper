@@ -16,19 +16,17 @@ func New(dto app.DTO) *filezillaRun {
 }
 
 func (lp *filezillaRun) Commands() []*cli.Command {
-	var commands []*cli.Command
-
-	commands = append(commands, &cli.Command{
-		Name:   "run",
-		Usage:  "Run filezilla",
-		Action: lp.action,
-		Flags: []cli.Flag{
-			&cli.BoolFlag{
-				Name:  "mask",
-				Usage: "Search by mask. Example: %site.ru%",
+	return []*cli.Command{
+		{
+			Name:   "run",
+			Usage:  "Run filezilla",
+			Action: lp.action,
+			Flags: []cli.Flag{
+				&cli.BoolFlag{
+					Name:  "mask",
+					Usage: "Search by mask. Example: %site.ru%",
+				},
 			},
 		},
-	})
-
-	return commands
+	}
 }

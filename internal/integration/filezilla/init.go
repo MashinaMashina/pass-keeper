@@ -15,7 +15,7 @@ func New(dto app.DTO) *filezilla {
 }
 
 func (p *filezilla) Commands() []*cli.Command {
-	var commands []*cli.Command
+	commands := make([]*cli.Command, 0, 1)
 	commands = append(commands, runner.New(p.DTO).Commands()...)
 
 	return []*cli.Command{

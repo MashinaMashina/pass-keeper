@@ -7,6 +7,7 @@ import (
 	"pass-keeper/internal/config"
 	"pass-keeper/internal/integration/filezilla"
 	"pass-keeper/internal/integration/putty"
+	"pass-keeper/internal/integration/txt"
 	"pass-keeper/internal/master"
 )
 
@@ -28,12 +29,13 @@ func ConfigFile() string {
 }
 
 func CollectCommands(dto app.DTO) ([]*cli.Command, error) {
-	var commands []*cli.Command
+	commands := make([]*cli.Command, 0, 32)
 
 	commands = append(commands, accesses.New(dto).Commands()...)
 	commands = append(commands, master.New(dto).Commands()...)
 	commands = append(commands, putty.New(dto).Commands()...)
 	commands = append(commands, filezilla.New(dto).Commands()...)
+	commands = append(commands, txt.New(dto).Commands()...)
 
 	return commands, nil
 }

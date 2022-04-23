@@ -12,7 +12,7 @@ import (
 )
 
 func (l *accessEdit) action(c *cli.Context) error {
-	var parameters []storage.Param
+	parameters := make([]storage.Param, 0, 1)
 
 	if c.Args().First() != "" {
 		if c.Bool("mask") {
@@ -30,8 +30,8 @@ func (l *accessEdit) action(c *cli.Context) error {
 	fmt.Fprintln(l.Stdout, "Editing "+access.Name())
 	fmt.Fprintln(l.Stdout, "If you do not want to change the line, skip by pressing Enter")
 
-	var value string
-	var edit []string
+	value := ""
+	edit := make([]string, 0, 10)
 	for {
 		fmt.Fprint(l.Stdout, "Enter name: ")
 		_, err = fmt.Fscanln(l.Stdin, &value)

@@ -16,21 +16,19 @@ func New(dto app.DTO) *accessAdd {
 }
 
 func (l *accessAdd) Commands() []*cli.Command {
-	var commands []*cli.Command
-
-	commands = append(commands, &cli.Command{
-		Name:   "add",
-		Usage:  "Add access",
-		Action: l.action,
-		Flags: []cli.Flag{
-			&cli.StringFlag{
-				Name:        "type",
-				Usage:       "Access type",
-				Required:    false,
-				Destination: nil,
+	return []*cli.Command{
+		{
+			Name:   "add",
+			Usage:  "Add access",
+			Action: l.action,
+			Flags: []cli.Flag{
+				&cli.StringFlag{
+					Name:        "type",
+					Usage:       "Access type",
+					Required:    false,
+					Destination: nil,
+				},
 			},
 		},
-	})
-
-	return commands
+	}
 }

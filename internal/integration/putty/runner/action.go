@@ -44,7 +44,7 @@ func (lp *puttyRun) action(c *cli.Context) error {
 
 	app := lp.Config.String("putty.app")
 
-	var parameters []storage.Param
+	parameters := make([]storage.Param, 0, 2)
 	parameters = append(parameters, params.NewEq("type", "ssh"))
 
 	if c.Args().First() != "" {

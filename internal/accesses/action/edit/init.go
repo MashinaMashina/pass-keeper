@@ -16,19 +16,17 @@ func New(dto app.DTO) *accessEdit {
 }
 
 func (l *accessEdit) Commands() []*cli.Command {
-	var commands []*cli.Command
-
-	commands = append(commands, &cli.Command{
-		Name:  "edit",
-		Usage: "Edit access",
-		Flags: []cli.Flag{
-			&cli.BoolFlag{
-				Name:  "mask",
-				Usage: "Search by mask. Example: %site.ru%",
+	return []*cli.Command{
+		{
+			Name:  "edit",
+			Usage: "Edit access",
+			Flags: []cli.Flag{
+				&cli.BoolFlag{
+					Name:  "mask",
+					Usage: "Search by mask. Example: %site.ru%",
+				},
 			},
+			Action: l.action,
 		},
-		Action: l.action,
-	})
-
-	return commands
+	}
 }

@@ -45,7 +45,7 @@ func (lp *filezillaRun) action(c *cli.Context) error {
 
 	app := lp.Config.String("filezilla.app")
 
-	var parameters []storage.Param
+	parameters := make([]storage.Param, 0, 1)
 
 	if c.Args().First() != "" {
 		if c.Bool("mask") {

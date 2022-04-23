@@ -16,7 +16,7 @@ func New(dto app.DTO) *putty {
 }
 
 func (p *putty) Commands() []*cli.Command {
-	var commands []*cli.Command
+	commands := make([]*cli.Command, 0, 2)
 
 	commands = append(commands, runner.New(p.DTO).Commands()...)
 	commands = append(commands, scanner.New(p.DTO).Commands()...)

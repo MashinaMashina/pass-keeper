@@ -16,19 +16,17 @@ func New(dto app.DTO) *puttyRun {
 }
 
 func (lp *puttyRun) Commands() []*cli.Command {
-	var commands []*cli.Command
-
-	commands = append(commands, &cli.Command{
-		Name:   "run",
-		Usage:  "Run putty",
-		Action: lp.action,
-		Flags: []cli.Flag{
-			&cli.BoolFlag{
-				Name:  "mask",
-				Usage: "Search by mask. Example: %site.ru%",
+	return []*cli.Command{
+		{
+			Name:   "run",
+			Usage:  "Run putty",
+			Action: lp.action,
+			Flags: []cli.Flag{
+				&cli.BoolFlag{
+					Name:  "mask",
+					Usage: "Search by mask. Example: %site.ru%",
+				},
 			},
 		},
-	})
-
-	return commands
+	}
 }

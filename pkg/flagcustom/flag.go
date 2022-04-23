@@ -5,7 +5,7 @@ import "errors"
 var ErrEscaping = errors.New("invalid escaping")
 
 func ParseFlags(in string) ([]string, error) {
-	var res []string
+	res := make([]string, 0, 64)
 
 	quoted := false
 	buffer := ""

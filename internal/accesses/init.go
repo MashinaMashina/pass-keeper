@@ -20,7 +20,8 @@ func New(dto app.DTO) *access {
 }
 
 func (p *access) Commands() []*cli.Command {
-	commands := accesslist.New(p.DTO).Commands()
+	commands := make([]*cli.Command, 0, 5)
+	commands = append(commands, accesslist.New(p.DTO).Commands()...)
 	commands = append(commands, accessadd.New(p.DTO).Commands()...)
 	commands = append(commands, accessedit.New(p.DTO).Commands()...)
 	commands = append(commands, accessshow.New(p.DTO).Commands()...)

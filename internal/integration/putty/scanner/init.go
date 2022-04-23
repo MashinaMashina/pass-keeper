@@ -16,13 +16,11 @@ func New(dto app.DTO) *linkScanner {
 }
 
 func (ls *linkScanner) Commands() []*cli.Command {
-	var commands []*cli.Command
-
-	commands = append(commands, &cli.Command{
-		Name:   "scan",
-		Usage:  "Collects accesses from putty shortcuts",
-		Action: ls.action,
-	})
-
-	return commands
+	return []*cli.Command{
+		{
+			Name:   "scan",
+			Usage:  "Collects accesses from putty shortcuts",
+			Action: ls.action,
+		},
+	}
 }

@@ -10,7 +10,7 @@ import (
 )
 
 func (l *accessList) action(c *cli.Context) error {
-	var parameters []storage.Param
+	parameters := make([]storage.Param, 0, 1)
 
 	if c.Args().First() != "" {
 		parameters = append(parameters, params.NewLike("name", c.Args().First()+"%"))

@@ -198,7 +198,7 @@ func (s *BaseDriver) List(params ...storage.Param) ([]accesstype.Access, error) 
 	defer stmt.Close()
 
 	var access accesstype.Access
-	var rows []accesstype.Access
+	rows := make([]accesstype.Access, 0, 16)
 
 	for stmt.Next() {
 		access, err = s.decodeRow(stmt)
