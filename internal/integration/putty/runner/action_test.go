@@ -1,4 +1,4 @@
-package puttyrun
+package runner
 
 import (
 	"github.com/stretchr/testify/assert"

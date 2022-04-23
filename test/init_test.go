@@ -208,6 +208,11 @@ func equalAccess(t *testing.T, expect, real accesstype.Access) bool {
 
 func FolderTest() string {
 	_, testdata, _, _ := runtime.Caller(0)
+
+	if strings.Index(testdata, " ") != -1 {
+		panic("path must not contain spaces")
+	}
+
 	testdata = path.Dir(testdata) + "/testdata"
 
 	return testdata

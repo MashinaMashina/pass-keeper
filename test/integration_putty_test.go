@@ -27,7 +27,7 @@ func TestPuttyParselnk(t *testing.T) {
 	access2.Params().Set("session_name", "sess name")
 
 	cases = append(cases, appTestCase{
-		Args:    []string{"putty", "scan", "-p", testdata + "/putty-lnk/folder"},
+		Args:    []string{"putty", "scan", testdata + "/putty-lnk/folder"},
 		Comment: "добавляем доступы",
 		Check: func(t *testing.T, dto app.DTO, output string) {
 			except := fmt.Sprintf("Scan \"PuTTY %s.lnk\"\n"+

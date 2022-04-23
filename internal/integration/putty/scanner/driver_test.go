@@ -1,4 +1,4 @@
-package parselnk
+package scanner
 
 import (
 	"fmt"
@@ -13,7 +13,7 @@ func TestParseArgs(t *testing.T) {
 	access := accesstype.NewSSH()
 	access.SetName(name)
 
-	p := &linkParser{}
+	p := &linkScanner{}
 
 	access.SetLogin("root")
 	access.SetHost("sub.domain.net")

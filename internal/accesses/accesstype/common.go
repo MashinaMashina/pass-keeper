@@ -87,8 +87,8 @@ type access struct {
 	params    Params
 }
 
-func new() access {
-	return access{params: NewParams()}
+func NewUnknown() Access {
+	return &access{params: NewParams()}
 }
 
 func (a *access) ID() int {

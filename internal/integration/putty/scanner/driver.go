@@ -1,4 +1,4 @@
-package parselnk
+package scanner
 
 import (
 	"flag"
@@ -14,7 +14,7 @@ import (
 
 var ErrEmptyLink = errors.New("link has no data")
 
-func (lp *linkParser) sshAccessByLnkFile(file filesystem.File) (accesstype.Access, error) {
+func (ls *linkScanner) sshAccessByLnkFile(file filesystem.File) (accesstype.Access, error) {
 	lnk, err := lnk2.File(file.FullPath())
 
 	if err != nil {
@@ -22,12 +22,12 @@ func (lp *linkParser) sshAccessByLnkFile(file filesystem.File) (accesstype.Acces
 	}
 
 	name := strings.TrimSuffix(file.Name(), ".lnk")
-	name = lp.cleanFilename(name)
+	name = ls.cleanFilename(name)
 
-	return lp.accessByArguments(lnk.StringData.CommandLineArguments, name, file.Dir())
+	return ls.accessByArguments(lnk.StringData.CommandLineArguments, name, file.Dir())
 }
 
-func (lp *linkParser) accessByArguments(args, name, group string) (accesstype.Access, error) {
+func (ls *linkScanner) accessByArguments(args, name, group string) (accesstype.Access, error) {
 	flagSet := flag.NewFlagSet("", flag.ContinueOnError)
 
 	sshUri := flagSet.String("ssh", "", "SSH")

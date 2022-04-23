@@ -1,4 +1,4 @@
-package puttyrun
+package runner
 
 import (
 	"errors"

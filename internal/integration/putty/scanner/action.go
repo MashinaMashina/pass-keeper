@@ -1,4 +1,4 @@
-package parselnk
+package scanner
 
 import (
 	"errors"
@@ -11,12 +11,14 @@ import (
 	"strings"
 )
 
-func (lp *linkParser) action(c *cli.Context) error {
-	path, err := filepath.Abs(c.String("path"))
+func (ls *linkScanner) action(c *cli.Context) error {
+	path, err := filepath.Abs(c.Args().First())
 
 	if err != nil {
 		return err
 	}
+
+	fmt.Fprintln(ls.Stdout, "Scanning", path)
 
 	f, err := filesystem.Stat(path)
 
@@ -46,22 +48,22 @@ func (lp *linkParser) action(c *cli.Context) error {
 			continue
 		}
 
-		fmt.Fprintln(lp.Stdout, fmt.Sprintf("Scan \"%s\"", file.Name()))
+		fmt.Fprintln(ls.Stdout, fmt.Sprintf("Scan \"%s\"", file.Name()))
 
-		access, err = lp.sshAccessByLnkFile(file)
+		access, err = ls.sshAccessByLnkFile(file)
 
 		if err != nil {
-			fmt.Fprintln(lp.Stdout, "Error with parsing .lnk:", err)
+			fmt.Fprintln(ls.Stdout, "Error with parsing .lnk:", err)
 			continue
 		}
 
-		if existRow, err := lp.Storage.FindExists(access); err == nil {
+		if existRow, err := ls.Storage.FindExists(access); err == nil {
 			access.SetID(existRow.ID())
 		}
 
-		err = lp.Storage.Save(access)
+		err = ls.Storage.Save(access)
 		if err != nil {
-			fmt.Fprintln(lp.Stdout, "Error with saving access:", err)
+			fmt.Fprintln(ls.Stdout, "Error with saving access:", err)
 			continue
 		}
 	}
