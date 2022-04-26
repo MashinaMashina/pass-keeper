@@ -1,24 +1,12 @@
 package params
 
 import (
+	"github.com/Masterminds/squirrel"
 	"pass-keeper/internal/accesses/storage"
-	"strconv"
 )
 
-type limit struct {
-	limit int
-}
-
-func NewLimit(l int) storage.Param {
-	return &limit{
-		limit: l,
+func NewLimit(l uint64) storage.Param {
+	return func(builder *squirrel.SelectBuilder) {
+		builder.Limit(l)
 	}
-}
-
-func (_this *limit) ParamType() string {
-	return "limit"
-}
-
-func (_this *limit) Value() []string {
-	return []string{strconv.Itoa(_this.limit)}
 }

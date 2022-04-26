@@ -1,6 +1,7 @@
 package storage
 
 import (
+	"github.com/Masterminds/squirrel"
 	"pass-keeper/internal/accesses/accesstype"
 )
 
@@ -15,7 +16,4 @@ type Storage interface {
 	Close() error
 }
 
-type Param interface {
-	ParamType() string
-	Value() []string
-}
+type Param func(*squirrel.SelectBuilder)

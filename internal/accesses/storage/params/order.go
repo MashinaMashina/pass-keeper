@@ -1,23 +1,12 @@
 package params
 
-import "pass-keeper/internal/accesses/storage"
-
-type order struct {
-	order string
-	by    string
-}
+import (
+	"github.com/Masterminds/squirrel"
+	"pass-keeper/internal/accesses/storage"
+)
 
 func NewOrder(ord, by string) storage.Param {
-	return &order{
-		order: ord,
-		by:    by,
+	return func(builder *squirrel.SelectBuilder) {
+		builder.OrderByClause(ord, by)
 	}
-}
-
-func (_this *order) ParamType() string {
-	return "order"
-}
-
-func (_this *order) Value() []string {
-	return []string{_this.order, _this.by}
 }

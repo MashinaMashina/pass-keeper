@@ -12,7 +12,6 @@ import (
 	"pass-keeper/internal/accesses/storage/params"
 	"pass-keeper/internal/config"
 	"pass-keeper/pkg/encrypt"
-	"strconv"
 	"time"
 )
 
@@ -172,17 +171,7 @@ func (s *BaseDriver) List(params ...storage.Param) ([]accesstype.Access, error) 
 		From("accesses")
 
 	for _, param := range params {
-		switch param.ParamType() {
-		case "like":
-			query = query.Where(param.Value()[0]+" LIKE ?", param.Value()[1])
-		case "eq":
-			query = query.Where(param.Value()[0]+" = ?", param.Value()[1])
-		case "limit":
-			i, _ := strconv.Atoi(param.Value()[0])
-			query = query.Limit(uint64(i))
-		default:
-			return nil, fmt.Errorf("invalid param type %s", param.ParamType())
-		}
+		param(&query)
 	}
 
 	sql, args, err := query.ToSql()
