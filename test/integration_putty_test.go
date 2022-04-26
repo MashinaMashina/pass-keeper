@@ -7,33 +7,49 @@ import (
 	"pass-keeper/internal/accesses/accesstype"
 	"pass-keeper/internal/accesses/storage/params"
 	"pass-keeper/internal/app"
+	"path/filepath"
+	"strings"
 	"testing"
 )
 
 func TestPuttyParselnk(t *testing.T) {
 	cases := make([]appTestCase, 0, 2)
 
-	testdata := FolderTest()
+	folder := FolderTest() + "/putty-lnk/folder"
+
+	var err error
+	folder, err = filepath.Abs(folder)
+
+	if err != nil {
+		t.Error(err)
+		return
+	}
+
+	folder = strings.ReplaceAll(folder, "\\", "/")
 
 	access1 := accesstype.NewSSH()
 	access1.SetName("site1.ru")
 	access1.SetHost("site-host1.ru")
 	access1.SetLogin("login1")
 	access1.SetPassword("qwerty123")
+	access1.SetGroup(folder)
 
 	access2 := accesstype.NewSSH()
 	access2.SetName("site2.ru")
 	access2.SetHost("127.0.0.1")
 	access2.Params().Set("session_name", "sess name")
+	access2.SetGroup(folder)
 
 	cases = append(cases, appTestCase{
-		Args:    []string{"putty", "scan", testdata + "/putty-lnk/folder"},
+		Args:    []string{"putty", "scan", folder},
 		Comment: "добавляем доступы",
 		Check: func(t *testing.T, dto app.DTO, output string) {
-			except := fmt.Sprintf("Scan \"PuTTY %s.lnk\"\n"+
+			except := fmt.Sprintf("Scanning %s\n"+
+				"Scan \"PuTTY %s.lnk\"\n"+
 				"Scan \"PuTTY %s.lnk\"\n"+
 				"Scan \"PuTTY.lnk\"\n"+
-				"Error with parsing .lnk: link has no data\n", access1.Name(), access2.Name())
+				"Error with parsing .lnk: link has no data\n",
+				folder, access1.Name(), access2.Name())
 
 			if assert.Equal(t, except, output) {
 				rows, err := dto.Storage.List()
@@ -62,7 +78,7 @@ func TestPuttyParselnk(t *testing.T) {
 	})
 
 	cases = append(cases, appTestCase{
-		Args:    []string{"putty", "scan", "-p", testdata + "/putty-lnk/folder/PuTTY site1.ru"},
+		Args:    []string{"putty", "scan", folder + "/PuTTY site1.ru"},
 		Comment: "обновляем доступ",
 		Before: func(w io.Writer, r io.Reader, dto app.DTO) {
 			access1.SetLogin("login2")

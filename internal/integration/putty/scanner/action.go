@@ -18,7 +18,7 @@ func (ls *linkScanner) action(c *cli.Context) error {
 		return err
 	}
 
-	fmt.Fprintln(ls.Stdout, "Scanning", path)
+	fmt.Fprintln(ls.Stdout, "Scanning", strings.ReplaceAll(path, "\\", "/"))
 
 	f, err := filesystem.Stat(path)
 
