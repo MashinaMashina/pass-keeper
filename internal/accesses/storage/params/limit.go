@@ -7,6 +7,6 @@ import (
 
 func NewLimit(l uint64) storage.Param {
 	return func(builder *squirrel.SelectBuilder) {
-		builder.Limit(l)
+		*builder = builder.Limit(l)
 	}
 }

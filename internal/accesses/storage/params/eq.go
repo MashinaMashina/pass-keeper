@@ -7,6 +7,6 @@ import (
 
 func NewEq(field, cond string) storage.Param {
 	return func(builder *squirrel.SelectBuilder) {
-		builder.Where(field+" = ?", cond)
+		*builder = builder.Where(field+" = ?", cond)
 	}
 }

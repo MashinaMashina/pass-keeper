@@ -7,6 +7,6 @@ import (
 
 func NewOrder(ord, by string) storage.Param {
 	return func(builder *squirrel.SelectBuilder) {
-		builder.OrderByClause(ord, by)
+		*builder = builder.OrderByClause(ord, by)
 	}
 }
