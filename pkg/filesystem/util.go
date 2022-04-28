@@ -5,6 +5,7 @@ import (
 	"io/ioutil"
 	"os"
 	"path/filepath"
+	"strings"
 )
 
 func Stat(path string) (File, error) {
@@ -53,4 +54,8 @@ func Exists(path string) (bool, error) {
 		return false, nil
 	}
 	return false, err
+}
+
+func PrettyPath(s string) string {
+	return strings.ReplaceAll(s, "\\", "/")
 }

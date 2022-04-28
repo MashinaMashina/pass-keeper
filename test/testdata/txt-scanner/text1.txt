@@ -1,0 +1,9 @@
+ssh
+host1.com
+login1
+passwd1$%
+
+Type: ft3p
+Login: bob
+Password: pol1010
+Host: ftp.host1.com

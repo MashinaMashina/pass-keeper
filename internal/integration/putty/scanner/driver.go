@@ -24,8 +24,7 @@ func (ls *linkScanner) sshAccessByLnkFile(file filesystem.File) (accesstype.Acce
 	name := strings.TrimSuffix(file.Name(), ".lnk")
 	name = ls.cleanFilename(name)
 
-	return ls.accessByArguments(lnk.StringData.CommandLineArguments, name,
-		strings.ReplaceAll(file.Dir(), "\\", "/"))
+	return ls.accessByArguments(lnk.StringData.CommandLineArguments, name, filesystem.PrettyPath(file.Dir()))
 }
 
 func (ls *linkScanner) accessByArguments(args, name, group string) (accesstype.Access, error) {
