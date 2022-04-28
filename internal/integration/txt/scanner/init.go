@@ -28,8 +28,8 @@ func New(dto app.DTO) *scanner {
 func (s *scanner) Commands() []*cli.Command {
 	return []*cli.Command{
 		{
-			Name:   "scan",
-			Usage:  "Collects accesses from putty shortcuts",
+			Name:   "import",
+			Usage:  "Import accesses from txt documents",
 			Action: s.action,
 		},
 	}

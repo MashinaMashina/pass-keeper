@@ -41,7 +41,7 @@ func TestPuttyParselnk(t *testing.T) {
 	access2.SetGroup(folder)
 
 	cases = append(cases, appTestCase{
-		Args:    []string{"putty", "scan", folder},
+		Args:    []string{"putty", "import", folder},
 		Comment: "добавляем доступы",
 		Check: func(t *testing.T, dto app.DTO, output string) {
 			except := fmt.Sprintf("Scanning %s\n"+
@@ -78,7 +78,7 @@ func TestPuttyParselnk(t *testing.T) {
 	})
 
 	cases = append(cases, appTestCase{
-		Args:    []string{"putty", "scan", folder + "/PuTTY site1.ru"},
+		Args:    []string{"putty", "import", folder + "/PuTTY site1.ru"},
 		Comment: "обновляем доступ",
 		Before: func(w io.Writer, r io.Reader, dto app.DTO) {
 			access1.SetLogin("login2")

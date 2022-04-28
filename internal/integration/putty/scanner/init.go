@@ -18,8 +18,8 @@ func New(dto app.DTO) *linkScanner {
 func (ls *linkScanner) Commands() []*cli.Command {
 	return []*cli.Command{
 		{
-			Name:   "scan",
-			Usage:  "Collects accesses from putty shortcuts",
+			Name:   "import",
+			Usage:  "Import accesses from putty shortcuts",
 			Action: ls.action,
 		},
 	}
